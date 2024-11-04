@@ -1,3 +1,5 @@
+**********TO DO 11/3/2024**************
+
 Put Out Fire Demo:
 
 Goal: NxN grid where user spawns and fire spawns, as they move the fire spreads, moving onto the fire puts out the fire
@@ -5,7 +7,7 @@ Goal: NxN grid where user spawns and fire spawns, as they move the fire spreads,
 Parameters: Fire spread probability, view distance
 
 Tasks:
-    1. Make grid
+    1. Make grid (NXN size)
     2. Add movable character
     3. Illlustrate view distance
     4. Add fire
