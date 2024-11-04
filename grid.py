@@ -16,6 +16,7 @@ OUTLINE_COLOR = "#FFFF00"  #Yellow
 #ENVIRONMENT CONSTANTS
 FIRE_SPREAD_PROB = 0.1
 VIEW_DISTANCE = 3
+ENVIRONMENT_STEPS = 0
 
 class FireFighter:
     
@@ -38,6 +39,7 @@ class Fire:
         canvas.itemconfigure(square, state="hidden")
         return square
 
+#Find borders so that the fire does not spread out of the environment
 def ReturnBorders(x, y):
     directions = []
     if y > 0:
@@ -51,6 +53,7 @@ def ReturnBorders(x, y):
     
     return directions
 
+#Check to see if the player is on top of a fire (i.e. extinguishing the fire)
 def CheckFireCollision(player):
     global firelist
     for fire in firelist:
@@ -59,19 +62,24 @@ def CheckFireCollision(player):
             firelist.remove(fire)
             break
 
+#Calculate which fires should be visible to the player
 def CheckFireVisibility(player):
     for fire in firelist:
+        #Find x and y distance between player and fire
         dist_x = abs(player.x // SPACE_SIZE - fire.x)
         dist_y = abs(player.y // SPACE_SIZE - fire.y)
 
+        #Check if the fire is in a straight line within the view distance of the player
         if (dist_x == 0 and dist_y <= VIEW_DISTANCE) or (dist_y == 0 and dist_x <= VIEW_DISTANCE):
+            #Make the fire visible
             canvas.itemconfigure(fire.square, state="normal")
             fire.visible = True
         else:
-            # Otherwise, hide the fire
+            #Hide the fire
             canvas.itemconfigure(fire.square, state="hidden")
             fire.visible = False
 
+#Draw the outlines for the view distance to help user visualize the restrictions
 def DrawViewDistanceOutlines(player):
     # Remove previous outlines
     canvas.delete("outline")
@@ -80,6 +88,7 @@ def DrawViewDistanceOutlines(player):
     player_grid_x = player.x // SPACE_SIZE
     player_grid_y = player.y // SPACE_SIZE
 
+    #Loop through squares within view distance and draw outline using SPACE_SIZE multiplier
     for i in range(1, VIEW_DISTANCE + 1):
         if player_grid_y - i >= 0: #UP
             x1, y1 = player.x, (player_grid_y - i) * SPACE_SIZE
@@ -94,6 +103,7 @@ def DrawViewDistanceOutlines(player):
             x1, y1 = (player_grid_x + i) * SPACE_SIZE, player.y
             canvas.create_rectangle(x1, y1, x1 + SPACE_SIZE, y1 + SPACE_SIZE, outline=OUTLINE_COLOR, tag="outline")
 
+#Spread the fire each time the player moves
 def SpreadFire():
     global firelist
     new_fires = []
@@ -103,6 +113,7 @@ def SpreadFire():
             x = fire.x
             y = fire.y
 
+            #Find valid spread directions and spread to one of them randomly
             spreadDirections = ReturnBorders(x, y)
             dir = random.choice(spreadDirections)
             
@@ -115,14 +126,17 @@ def SpreadFire():
             elif dir == "left": #spread left
                 x -= 1
             
+            #Do not allow fire to spread on top of itself
             if all(f.x != x or f.y != y for f in firelist):
                 new_fire = Fire(x, y)
                 new_fires.append(new_fire)
 
     firelist.extend(new_fires)      
 
+#Main loop ran everytime an arrow key is pressed
 def MoveSquare(direction, player):
 
+    #Do movement in requested direction
     if direction == "up" and player.y > 0:
         player.y -= SPACE_SIZE
     elif direction == "down" and player.y < GAME_HEIGHT - SPACE_SIZE:
@@ -131,8 +145,11 @@ def MoveSquare(direction, player):
         player.x -= SPACE_SIZE
     elif direction == "right" and player.x < GAME_WIDTH - SPACE_SIZE:
         player.x += SPACE_SIZE
+    
     # Update square position on the canvas
     canvas.coords(player.square, player.x, player.y, player.x + SPACE_SIZE, player.y + SPACE_SIZE)
+    
+    #Housekeeping functions to progress game state
     SpreadFire()
     CheckFireCollision(player)
     CheckFireVisibility(player)
@@ -156,13 +173,13 @@ x = int((screen_width / 2) - (window_width / 2))
 y = int((screen_height / 2) - (window_height / 2))
 window.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
+#Initialize environment
 player = FireFighter()
-
 fireStartX = random.randint(0, GRID_SIZE-1)
 fireStartY = random.randint(0, GRID_SIZE-1)
-
 firelist = [Fire(fireStartX, fireStartY)]
 
+#Set up keybinds for movement
 window.bind("<Up>", lambda event: MoveSquare("up",player))
 window.bind("<Down>", lambda event: MoveSquare("down",player))
 window.bind("<Left>", lambda event: MoveSquare("left",player))
