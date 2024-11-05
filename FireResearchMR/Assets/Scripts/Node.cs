@@ -5,24 +5,24 @@ using UnityEngine;
 
 public class Node
 {
-    public static List<Material> materials;
     public Vector3 worldPosition;
     public GameObject nodeObject;
+    public int x;
+    public int y;
 
     private bool onFire;
     private bool hasPlayer;
+    private Material[] materials;
 
-    static Node()
+    public Node(int _x, int _y, Vector3 _worldPosition, GameObject _nodeObject, Material[] _materials)
     {
-        materials = new List<Material> { Resources.Load<Material>("Materials/White"), Resources.Load<Material>("Materials/Fire"), Resources.Load<Material>("Materials/Player") };
-    }
-
-    public Node(Vector3 _worldPosition, GameObject _nodeObject)
-    {
+        this.x = _x;
+        this.y = _y;
         this.nodeObject = _nodeObject;
         this.worldPosition = _worldPosition;
         this.onFire = false;
         this.hasPlayer = false;
+        this.materials = _materials;
     }
 
     public bool OnFire

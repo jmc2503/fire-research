@@ -157,6 +157,10 @@ MonoBehaviour:
   BoxSeparation: 0.05
   gridStartingCorner: {x: 0, y: 0}
   gridBox: {fileID: 8019379788074679879, guid: 1d3235be6a02950488398f1d38f5a6d1, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 1f8d87353717b5e47aaf10dfa04a253e, type: 2}
+  - {fileID: 2100000, guid: dce934f63aca85a45affc10cb11d62c5, type: 2}
+  - {fileID: 2100000, guid: b2cdec7102a133a498970be3d8937780, type: 2}
 --- !u!4 &467957173
 Transform:
   m_ObjectHideFlags: 0
