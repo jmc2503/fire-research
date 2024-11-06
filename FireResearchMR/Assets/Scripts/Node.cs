@@ -65,7 +65,14 @@ public class Node
         }
         else
         {
-            this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
+            if (this.onFire)
+            {
+                this.nodeObject.GetComponent<MeshRenderer>().material = materials[1];
+            }
+            else
+            {
+                this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
+            }
         }
     }
 }

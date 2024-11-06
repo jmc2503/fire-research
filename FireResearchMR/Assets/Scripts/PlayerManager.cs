@@ -8,11 +8,7 @@ public class PlayerManager : MonoBehaviour
     private Node currNode;
     private Node lastNode;
     public GridManager gridManager;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
+    public FireManager fireManager;
 
     // Update is called once per frame
     void Update()
@@ -26,6 +22,15 @@ public class PlayerManager : MonoBehaviour
             {
                 lastNode.HasPlayer = false;
             }
+
+            //Put out the fire
+            if (currNode.OnFire)
+            {
+                fireManager.PutOutFire(currNode);
+            }
+
+            //Spread the fire
+            fireManager.SpreadFire();
         }
 
         lastNode = currNode;

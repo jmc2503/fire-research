@@ -4,35 +4,43 @@ using UnityEngine;
 
 public class FireManager : MonoBehaviour
 {
-    public Vector2 fireStartPoint;
     public float FIRE_SPREAD_PROBABILITY;
     public GridManager gridManager;
 
-    private List<Node> firelist;
+    private List<Node> fireList = new List<Node>();
 
-
-    // Start is called before the first frame update
-    void Start()
+    public void StartFire(Node startNode)
     {
-
+        startNode.OnFire = true;
+        fireList.Add(startNode);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void PutOutFire(Node currNode)
     {
-
+        currNode.OnFire = false;
+        fireList.Remove(currNode);
     }
 
     public void SpreadFire()
     {
         List<Node> newFires = new List<Node>();
 
-        foreach (Node node in firelist)
+        foreach (Node node in fireList)
         {
             if (Random.value <= FIRE_SPREAD_PROBABILITY)
             {
+                //Spawn Fire
+                List<Node> availableSpots = gridManager.GetAvailableFireSpread(node);
 
+                if (availableSpots.Count > 0)
+                {
+                    Node fireNode = availableSpots[Random.Range(0, availableSpots.Count)];
+                    newFires.Add(fireNode);
+                    fireNode.OnFire = true;
+                }
             }
         }
+
+        fireList.AddRange(newFires);
     }
 }

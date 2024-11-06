@@ -11,6 +11,8 @@ public class GridManager : MonoBehaviour
     public int GridColumns;
     public float BoxSeparation;
     public Vector2 gridStartingCorner;
+    public Vector2 fireStartPoint;
+    public FireManager fireManager;
 
     public GameObject gridBox;
     public Material[] materials;
@@ -38,6 +40,7 @@ public class GridManager : MonoBehaviour
         grid = new Node[GridRows, GridColumns];
 
         CreateGrid();
+        fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
     }
 
     void CreateGrid()
@@ -73,21 +76,33 @@ public class GridManager : MonoBehaviour
         int y = node.y;
         List<Node> availableNodes = new List<Node>();
 
-        if (x - 1 >= 0 && !grid[x - 1, y].OnFire)
+        if (x - 1 >= 0)
         {
-            availableNodes.Add(grid[x - 1, y]);
+            if (!grid[x - 1, y].OnFire && !grid[x - 1, y].HasPlayer)
+            {
+                availableNodes.Add(grid[x - 1, y]);
+            }
         }
-        if (x + 1 < GridRows && !grid[x - 1, y].OnFire)
+        if (x + 1 < GridRows)
         {
-            availableNodes.Add(grid[x - 1, y]);
+            if (!grid[x + 1, y].OnFire && !grid[x + 1, y].HasPlayer)
+            {
+                availableNodes.Add(grid[x + 1, y]);
+            }
         }
-        if (y - 1 >= 0 && !grid[x, y - 1].OnFire)
+        if (y - 1 >= 0)
         {
-            availableNodes.Add(grid[x, y - 1]);
+            if (!grid[x, y - 1].OnFire && !grid[x, y - 1].HasPlayer)
+            {
+                availableNodes.Add(grid[x, y - 1]);
+            }
         }
-        if (y + 1 < GridColumns && !grid[x, y + 1].OnFire)
+        if (y + 1 < GridColumns)
         {
-            availableNodes.Add(grid[x, y + 1]);
+            if (!grid[x, y + 1].OnFire && !grid[x, y + 1].HasPlayer)
+            {
+                availableNodes.Add(grid[x, y + 1]);
+            }
         }
         return availableNodes;
     }
