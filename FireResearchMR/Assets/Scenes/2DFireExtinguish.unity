@@ -153,12 +153,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84b58b615f894a44fabeb9b110379f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fireManager: {fileID: 467957174}
   GridRows: 4
   GridColumns: 4
   BoxSeparation: 0.05
   gridStartingCorner: {x: 0, y: 0}
   fireStartPoint: {x: 2, y: 2}
-  fireManager: {fileID: 467957174}
   gridBox: {fileID: 8019379788074679879, guid: 1d3235be6a02950488398f1d38f5a6d1, type: 3}
   materials:
   - {fileID: 2100000, guid: 1f8d87353717b5e47aaf10dfa04a253e, type: 2}
@@ -191,8 +191,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ce4ceb0acce94f45a536fc917a560d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FIRE_SPREAD_PROBABILITY: 0.2
   gridManager: {fileID: 467957172}
+  FIRE_SPREAD_PROBABILITY: 0.2
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -281,7 +281,7 @@ Transform:
   m_GameObject: {fileID: 705507993}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 11.68, y: -1.9, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -321,6 +321,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 467957172}
   fireManager: {fileID: 467957174}
+  viewDistance: 2
+  viewDistanceIndicator: {fileID: 5597997230458015720, guid: 5187241e638e5c74986a6e0102b0fcd8, type: 3}
 --- !u!65 &890573119
 BoxCollider:
   m_ObjectHideFlags: 0

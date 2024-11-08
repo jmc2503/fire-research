@@ -6,14 +6,17 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    [Header("SCRIPTS")]
+    public FireManager fireManager;
 
+    [Header("PARAMETERS")]
     public int GridRows;
     public int GridColumns;
     public float BoxSeparation;
     public Vector2 gridStartingCorner;
     public Vector2 fireStartPoint;
-    public FireManager fireManager;
 
+    [Header("GAMEOBJECTS")]
     public GameObject gridBox;
     public Material[] materials;
 
@@ -105,5 +108,38 @@ public class GridManager : MonoBehaviour
             }
         }
         return availableNodes;
+    }
+
+    public Vector3[,] GetIndicatorPositions(Node currNode, int viewDistance)
+    {
+        Vector3[,] positions = new Vector3[4, viewDistance];
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < viewDistance; j++)
+            {
+                Vector3 newPos = currNode.worldPosition;
+                int adjustedJ = j + 1;
+                if (i == 0)
+                { //Left indicators
+                    newPos.x += adjustedJ * (-widthJump);
+                }
+                else if (i == 1) //right indicators
+                {
+                    newPos.x += adjustedJ * (widthJump);
+                }
+                else if (i == 2) //down indicators
+                {
+                    newPos.z += adjustedJ * (-heightJump);
+                }
+                else
+                {
+                    newPos.z += adjustedJ * (heightJump);
+                }
+                positions[i, j] = newPos;
+            }
+        }
+
+        return positions;
     }
 }

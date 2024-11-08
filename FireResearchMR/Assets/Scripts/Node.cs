@@ -10,8 +10,10 @@ public class Node
     public int x;
     public int y;
 
+
     private bool onFire;
     private bool hasPlayer;
+    private bool hidden;
     private Material[] materials;
 
     public Node(int _x, int _y, Vector3 _worldPosition, GameObject _nodeObject, Material[] _materials)
@@ -22,7 +24,18 @@ public class Node
         this.worldPosition = _worldPosition;
         this.onFire = false;
         this.hasPlayer = false;
+        this.hidden = true;
         this.materials = _materials;
+    }
+
+    public bool Hidden
+    {
+        get { return hidden; }
+        set
+        {
+            hidden = value;
+            SetFireMaterial(this.onFire);
+        }
     }
 
     public bool OnFire
@@ -47,7 +60,7 @@ public class Node
 
     private void SetFireMaterial(bool value)
     {
-        if (value)
+        if (value && !this.hidden)
         {
             this.nodeObject.GetComponent<MeshRenderer>().material = materials[1];
         }
