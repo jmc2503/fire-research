@@ -19,8 +19,9 @@ public class PlayerManager : MonoBehaviour
     private Node currNode;
     private Node lastNode;
     private GameObject[,] viewIndicators;
+    private bool started = false;
 
-    void Start()
+    public void PlayerStart()
     {
         viewIndicators = new GameObject[4, viewDistance];
         for (int i = 0; i < 4; i++)
@@ -30,34 +31,40 @@ public class PlayerManager : MonoBehaviour
                 viewIndicators[i, j] = Instantiate(viewDistanceIndicator, Vector3.zero, Quaternion.identity);
             }
         }
+
+        started = true;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        currNode = gridManager.GetNodeFromWorldPoint(transform.position);
-
-        if (currNode != lastNode)
+        if (started)
         {
-            currNode.HasPlayer = true;
-            if (lastNode != null)
+            currNode = gridManager.GetNodeFromWorldPoint(transform.position);
+
+            if (currNode != lastNode)
             {
-                lastNode.HasPlayer = false;
+                currNode.HasPlayer = true;
+                if (lastNode != null)
+                {
+                    lastNode.HasPlayer = false;
+                }
+
+                //Put out the fire
+                if (currNode.OnFire)
+                {
+                    fireManager.PutOutFire(currNode);
+                }
+
+                //Spread the fire and checkvisibilty
+                fireManager.SpreadFire();
+                fireManager.SetFireVisibility(currNode, viewDistance);
+                DrawViewIndicators(currNode);
             }
 
-            //Put out the fire
-            if (currNode.OnFire)
-            {
-                fireManager.PutOutFire(currNode);
-            }
-
-            //Spread the fire and checkvisibilty
-            fireManager.SpreadFire();
-            fireManager.SetFireVisibility(currNode, viewDistance);
-            DrawViewIndicators(currNode);
+            lastNode = currNode;
         }
-
-        lastNode = currNode;
 
     }
 

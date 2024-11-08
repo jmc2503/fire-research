@@ -1,19 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
     [Header("SCRIPTS")]
     public FireManager fireManager;
+    public PlayerManager playerManager;
 
     [Header("PARAMETERS")]
+    public bool AR_ENABLED;
     public int GridRows;
     public int GridColumns;
     public float BoxSeparation;
-    public Vector2 gridStartingCorner;
+    public Vector3 gridStartingCorner;
     public Vector2 fireStartPoint;
 
     [Header("GAMEOBJECTS")]
@@ -29,21 +29,56 @@ public class GridManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Renderer renderer = gridBox.GetComponent<Renderer>();
-        Vector3 gridBoxSize = renderer.bounds.size;
+        if (!AR_ENABLED)
+        {
 
-        //Establish constants
-        widthJump = gridBoxSize.x + BoxSeparation;
-        heightJump = gridBoxSize.z + BoxSeparation;
-        gridWorldSize.x = widthJump * GridRows;
-        gridWorldSize.y = heightJump * GridColumns;
+            Renderer renderer = gridBox.GetComponent<Renderer>();
+            Vector3 gridBoxSize = renderer.bounds.size;
 
-        nodeRadius = widthJump / 2;
+            //Establish constants
+            widthJump = gridBoxSize.x + BoxSeparation;
+            heightJump = gridBoxSize.z + BoxSeparation;
+            gridWorldSize.x = widthJump * GridRows;
+            gridWorldSize.y = heightJump * GridColumns;
 
-        grid = new Node[GridRows, GridColumns];
+            nodeRadius = widthJump / 2;
 
-        CreateGrid();
-        fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
+            grid = new Node[GridRows, GridColumns];
+
+            CreateGrid();
+            playerManager.PlayerStart();
+            fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
+        }
+        else
+        {
+            this.enabled = false;
+        }
+    }
+
+
+    public void ARStart()
+    {
+        if (AR_ENABLED)
+        {
+            this.enabled = true;
+            Renderer renderer = gridBox.GetComponent<Renderer>();
+            Vector3 gridBoxSize = renderer.bounds.size;
+
+            //Establish constants
+            widthJump = gridBoxSize.x + BoxSeparation;
+            heightJump = gridBoxSize.z + BoxSeparation;
+            gridWorldSize.x = widthJump * GridRows;
+            gridWorldSize.y = heightJump * GridColumns;
+
+            nodeRadius = widthJump / 2;
+
+            grid = new Node[GridRows, GridColumns];
+
+            CreateGrid();
+            fireManager.enabled = true;
+            playerManager.PlayerStart();
+            fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
+        }
     }
 
     void CreateGrid()
@@ -52,7 +87,7 @@ public class GridManager : MonoBehaviour
         {
             for (int j = 0; j < GridColumns; j++)
             {
-                Vector3 worldPos = new Vector3(gridStartingCorner.x + (i * widthJump + nodeRadius), 0, gridStartingCorner.y + (j * heightJump + nodeRadius));
+                Vector3 worldPos = new Vector3(gridStartingCorner.x + (i * widthJump + nodeRadius), gridStartingCorner.y, gridStartingCorner.z + (j * heightJump + nodeRadius));
                 grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, Quaternion.identity), materials);
             }
         }
@@ -62,8 +97,8 @@ public class GridManager : MonoBehaviour
     {
         //float percentX = (worldPos.x + gridWorldSize.x / 2) / gridWorldSize.x;
         //float percentY = (worldPos.z + gridWorldSize.y / 2) / gridWorldSize.y;
-        float percentX = worldPos.x / gridWorldSize.x;
-        float percentY = worldPos.z / gridWorldSize.y;
+        float percentX = (worldPos.x - gridStartingCorner.x) / gridWorldSize.x;
+        float percentY = (worldPos.z - gridStartingCorner.z) / gridWorldSize.y;
         percentX = Mathf.Clamp01(percentX);
         percentY = Mathf.Clamp01(percentY);
 

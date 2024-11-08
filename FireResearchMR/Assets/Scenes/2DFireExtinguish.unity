@@ -154,10 +154,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fireManager: {fileID: 467957174}
+  playerManager: {fileID: 890573118}
+  AR_ENABLED: 0
   GridRows: 4
   GridColumns: 4
   BoxSeparation: 0.05
-  gridStartingCorner: {x: 0, y: 0}
+  gridStartingCorner: {x: 2, y: 0, z: 2}
   fireStartPoint: {x: 2, y: 2}
   gridBox: {fileID: 8019379788074679879, guid: 1d3235be6a02950488398f1d38f5a6d1, type: 3}
   materials:
@@ -193,6 +195,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 467957172}
   FIRE_SPREAD_PROBABILITY: 0.2
+  AR_ENABLED: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -322,6 +325,7 @@ MonoBehaviour:
   gridManager: {fileID: 467957172}
   fireManager: {fileID: 467957174}
   viewDistance: 2
+  AR_ENABLED: 0
   viewDistanceIndicator: {fileID: 5597997230458015720, guid: 5187241e638e5c74986a6e0102b0fcd8, type: 3}
 --- !u!65 &890573119
 BoxCollider:
