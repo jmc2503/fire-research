@@ -59,31 +59,56 @@ public class Node
 
     private void SetFireMaterial(bool value)
     {
+        Transform fireTranform = nodeObject.transform.Find("MediumFlames");
+
         if (value && !this.hidden)
         {
             this.nodeObject.GetComponent<MeshRenderer>().material = materials[1];
+            if (fireTranform != null)
+            {
+                fireTranform.gameObject.SetActive(true);
+            }
         }
         else
         {
             this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
+            if (fireTranform != null)
+            {
+                fireTranform.gameObject.SetActive(false);
+            }
         }
     }
 
     private void SetPlayerMaterial(bool value)
     {
+
+        Transform fireTranform = nodeObject.transform.Find("MediumFlames");
+
         if (value)
         {
             this.nodeObject.GetComponent<MeshRenderer>().material = materials[2];
+            if (fireTranform != null)
+            {
+                fireTranform.gameObject.SetActive(false);
+            }
         }
         else
         {
             if (this.onFire)
             {
                 this.nodeObject.GetComponent<MeshRenderer>().material = materials[1];
+                if (fireTranform != null)
+                {
+                    fireTranform.gameObject.SetActive(true);
+                }
             }
             else
             {
                 this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
+                if (fireTranform != null)
+                {
+                    fireTranform.gameObject.SetActive(false);
+                }
             }
         }
     }
