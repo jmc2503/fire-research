@@ -112,4 +112,8 @@ public class Node
             }
         }
     }
+
+    public static (int, int) operator -(Node self, Node other){
+        return (self.x - other.x, self.y - other.y);
+    }
 }

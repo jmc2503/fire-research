@@ -55,7 +55,7 @@ public class FireManager : MonoBehaviour
             int xDist = Math.Abs(fire.x - currNode.x);
             int yDist = Math.Abs(fire.y - currNode.y);
 
-            if ((xDist == 0 && yDist <= viewDistance) || (yDist == 0 && xDist <= viewDistance))
+            if (xDist + yDist <= viewDistance)
             {
                 fire.Hidden = false;
             }

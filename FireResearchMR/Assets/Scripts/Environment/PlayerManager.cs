@@ -18,17 +18,20 @@ public class PlayerManager : MonoBehaviour
 
     private Node currNode;
     private Node lastNode;
-    private GameObject[,] viewIndicators;
+    private List<GameObject> viewIndicators;
     private bool started = false;
 
     public void PlayerStart()
     {
-        viewIndicators = new GameObject[4, viewDistance];
-        for (int i = 0; i < 4; i++)
+        viewIndicators = new List<GameObject>();
+        for (int i = -viewDistance; i <= viewDistance; i++)
         {
-            for (int j = 0; j < viewDistance; j++)
+            for (int j = -viewDistance; j <= viewDistance; j++)
             {
-                viewIndicators[i, j] = Instantiate(viewDistanceIndicator, Vector3.zero, Quaternion.identity);
+                if (Math.Abs(i) + Math.Abs(j) <= viewDistance && Math.Abs(i) + Math.Abs(j) != 0)
+                {
+                    viewIndicators.Add(Instantiate(viewDistanceIndicator, Vector3.zero, Quaternion.identity));
+                }
             }
         }
 
@@ -71,14 +74,11 @@ public class PlayerManager : MonoBehaviour
     void DrawViewIndicators(Node node)
     {
 
-        Vector3[,] newPos = gridManager.GetIndicatorPositions(currNode, viewDistance);
+        List<Vector3> newPos = gridManager.GetIndicatorPositions(node, viewDistance);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < viewIndicators.Count; i++)
         {
-            for (int j = 0; j < viewDistance; j++)
-            {
-                viewIndicators[i, j].transform.position = newPos[i, j];
-            }
+            viewIndicators[i].transform.position = newPos[i];
         }
     }
 }

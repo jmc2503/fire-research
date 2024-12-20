@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,7 @@ public class GridManager : MonoBehaviour
     public Vector2 fireStartPoint;
 
     [Header("GAMEOBJECTS")]
+    public GameObject gridFloor;
     public GameObject gridBox;
     public Material[] materials;
 
@@ -38,6 +40,9 @@ public class GridManager : MonoBehaviour
             //Establish constants
             widthJump = gridBoxSize.x + BoxSeparation;
             heightJump = gridBoxSize.z + BoxSeparation;
+
+            SetPlaneVariables(gridFloor);
+
             gridWorldSize.x = widthJump * GridRows;
             gridWorldSize.y = heightJump * GridColumns;
 
@@ -67,6 +72,9 @@ public class GridManager : MonoBehaviour
             //Establish constants
             widthJump = gridBoxSize.x + BoxSeparation;
             heightJump = gridBoxSize.z + BoxSeparation;
+
+            SetPlaneVariables(gridFloor);
+
             gridWorldSize.x = widthJump * GridRows;
             gridWorldSize.y = heightJump * GridColumns;
 
@@ -83,6 +91,7 @@ public class GridManager : MonoBehaviour
 
     void CreateGrid()
     {
+
         for (int i = 0; i < GridRows; i++)
         {
             for (int j = 0; j < GridColumns; j++)
@@ -145,36 +154,45 @@ public class GridManager : MonoBehaviour
         return availableNodes;
     }
 
-    public Vector3[,] GetIndicatorPositions(Node currNode, int viewDistance)
+    public List<Vector3> GetIndicatorPositions(Node currNode, int viewDistance)
     {
-        Vector3[,] positions = new Vector3[4, viewDistance];
+        List<Vector3> positions = new List<Vector3>();
 
-        for (int i = 0; i < 4; i++)
+        for (int i = -viewDistance; i <= viewDistance; i++)
         {
-            for (int j = 0; j < viewDistance; j++)
+            for (int j = -viewDistance; j <= viewDistance; j++)
             {
-                Vector3 newPos = currNode.worldPosition;
-                int adjustedJ = j + 1;
-                if (i == 0)
-                { //Left indicators
-                    newPos.x += adjustedJ * (-widthJump);
-                }
-                else if (i == 1) //right indicators
+                if (Math.Abs(i) + Math.Abs(j) <= viewDistance && Math.Abs(i) + Math.Abs(j) != 0)
                 {
-                    newPos.x += adjustedJ * (widthJump);
+                    Vector3 newPos = currNode.worldPosition;
+                    newPos.x += j * widthJump;
+                    newPos.z += i * widthJump;
+                    positions.Add(newPos);
                 }
-                else if (i == 2) //down indicators
-                {
-                    newPos.z += adjustedJ * (-heightJump);
-                }
-                else
-                {
-                    newPos.z += adjustedJ * (heightJump);
-                }
-                positions[i, j] = newPos;
             }
         }
 
         return positions;
+    }
+
+    void SetPlaneVariables(GameObject plane)
+    {
+        if (plane != null)
+        {
+            Bounds bounds = plane.GetComponent<MeshFilter>().mesh.bounds;
+            Vector3 bottomLeftCorner = plane.transform.TransformPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.min.z));
+            Vector3 topRightCorner = plane.transform.TransformPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.max.z));
+
+            Debug.Log(bottomLeftCorner);
+            Debug.Log(topRightCorner);
+
+            gridStartingCorner.x = bottomLeftCorner.x;
+            gridStartingCorner.y = bottomLeftCorner.y + 0.1f;
+            gridStartingCorner.z = bottomLeftCorner.z;
+
+            GridRows = (int)Math.Floor((topRightCorner.x - bottomLeftCorner.x) / widthJump);
+            GridColumns = (int)Math.Floor((topRightCorner.z - bottomLeftCorner.z) / heightJump);
+
+        }
     }
 }
