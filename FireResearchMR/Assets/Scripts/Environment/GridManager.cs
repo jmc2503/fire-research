@@ -50,7 +50,7 @@ public class GridManager : MonoBehaviour
 
             grid = new Node[GridRows, GridColumns];
 
-            CreateGrid();
+            CreateGrid(grid);
             playerManager.PlayerStart();
             fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
         }
@@ -82,14 +82,14 @@ public class GridManager : MonoBehaviour
 
             grid = new Node[GridRows, GridColumns];
 
-            CreateGrid();
+            CreateGrid(grid);
             fireManager.enabled = true;
             playerManager.PlayerStart();
             fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
         }
     }
 
-    void CreateGrid()
+    public void CreateGrid(Node[,] grid)
     {
 
         for (int i = 0; i < GridRows; i++)

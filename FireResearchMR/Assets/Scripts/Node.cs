@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Node
@@ -113,7 +114,10 @@ public class Node
         }
     }
 
-    public static (int, int) operator -(Node self, Node other){
+    public static (int, int) operator -(Node self, Node other)
+    {
         return (self.x - other.x, self.y - other.y);
     }
+
+
 }
