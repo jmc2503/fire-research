@@ -9,7 +9,6 @@ public class FireManager : MonoBehaviour
 
     [Header("PARAMETERS")]
     public float FIRE_SPREAD_PROBABILITY;
-    public bool AR_ENABLED;
 
     private List<Node> fireList = new List<Node>();
 

@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class QLearningAgent : MonoBehaviour
 {
 
-    [Header("PARAMETERS")]
+    [Header("PARAMETERS")] //Various Q Learning Hyperparameters
     public float LEARNING_RATE;
     public float DISCOUNT;
     public float EPSILON;
@@ -14,68 +17,94 @@ public class QLearningAgent : MonoBehaviour
     public int NUM_EPISODES;
     public int EPISODE_LENGTH;
 
-    [Header("REWARDS")]
+    [Header("REWARDS")] //Rewards and Reward Tracking
     public int FIRE_REWARD;
     public int MOVE_PENALTY;
-    public float[] episode_reward_list;
+    private float[] episode_reward_list;
 
-    [Header("Scripts")]
+    [Header("Scripts")] //Script Links
     public GridManager GridManager;
 
-    [Header("Positions")]
-    public Vector2 fireStartPos;
-    public Vector2 playerStartPos;
-
-    private Dictionary<(int, int), float[]> qTable;
+    private Dictionary<(int, int), float[]> qTable; //qTable takes distance to fire as input and holds 4 float list of possible actions
     private Node[,] grid;
+
+    //These track the player and fire location
     private Node playerNode;
     private Node fireNode;
+
+    //Size of grid
     private int rows;
     private int cols;
+
+    private bool trainingComplete = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        CreateQTable();
+        //Initialization of variables
         rows = GridManager.GridRows;
         cols = GridManager.GridColumns;
         grid = new Node[rows, cols];
         GridManager.CreateGrid(grid);
+
         episode_reward_list = new float[NUM_EPISODES];
+
+        CreateQTable();
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        //Only allow training to occur once using trainingComplete flag variable
+        if (!trainingComplete && Input.GetKeyDown(KeyCode.Space))
+        {
+            Train();
+            trainingComplete = true;
+        }
     }
 
     void CreateQTable()
     {
+        //Create qTable of all possible distances that fire can be from player using size of grid
+        qTable = new Dictionary<(int, int), float[]>();
 
         for (int x1 = -rows; x1 < rows; x1++)
         {
             for (int y1 = -cols; y1 < cols; y1++)
             {
-
-                qTable[(x1, y1)] = new float[4];
+                qTable[(x1, y1)] = new float[4]; //list of size 4 to represent going up, down, left, right
             }
         }
     }
 
-    void Train()
+    async void Train()
     {
+        //Loop through episodes
         for (int episode = 0; episode < NUM_EPISODES; episode++)
         {
 
             float episode_reward = 0;
 
+            //Generate starting locations for player and fire randomly
+            (int, int) playerStart = GenerateRandomStart();
+            (int, int) fireStart = GenerateRandomStart();
+
+            //Set the nodes by getting them from the grid
+            playerNode = grid[playerStart.Item1, playerStart.Item2];
+            playerNode.HasPlayer = true;
+
+            fireNode = grid[fireStart.Item1, fireStart.Item2];
+            fireNode.OnFire = true;
+            fireNode.Hidden = false;
+
+            //Loop through steps of an episode
             for (int step = 0; step < EPISODE_LENGTH; step++)
             {
-                (int, int) obs = playerNode - fireNode;
+                (int, int) obs = playerNode - fireNode; //subtraction operator overwritten in Node class
 
                 int a = 0;
 
+                //Generate random action or best action using epsilon greedy policy
                 if (Random.value > EPSILON)
                 {
                     a = ArgMax(qTable[obs]);
@@ -87,17 +116,21 @@ public class QLearningAgent : MonoBehaviour
 
                 action(a);
 
+                await Task.Delay(10); //delay purely for visuals in unity editor
+
                 float reward = 0;
 
+                //Check for rewards
                 if (playerNode == fireNode)
                 {
                     reward += FIRE_REWARD;
                 }
                 else
                 {
-                    reward += MOVE_PENALTY;
+                    reward -= MOVE_PENALTY;
                 }
 
+                //Update qTable using basic Q Learning rule
                 (int, int) new_obs = playerNode - fireNode;
                 float max_future_q = Max(qTable[new_obs]);
                 float current_q = qTable[new_obs][a];
@@ -106,7 +139,7 @@ public class QLearningAgent : MonoBehaviour
 
                 if (reward == FIRE_REWARD)
                 {
-                    new_q = reward;
+                    new_q = reward; //found fire this state should just be maximized
                 }
                 else
                 {
@@ -117,6 +150,7 @@ public class QLearningAgent : MonoBehaviour
 
                 episode_reward += reward;
 
+                //Stop iterating if the fire was found
                 if (reward == FIRE_REWARD)
                 {
                     break;
@@ -124,8 +158,11 @@ public class QLearningAgent : MonoBehaviour
 
             }
 
+            //Clean up, track results, and decay epsilon
             episode_reward_list[episode] = episode_reward;
-
+            playerNode.HasPlayer = false;
+            fireNode.OnFire = false;
+            fireNode.Hidden = true;
             EPSILON *= EPS_DECAY;
         }
     }
@@ -155,6 +192,7 @@ public class QLearningAgent : MonoBehaviour
         int new_x = playerNode.x + x;
         int new_y = playerNode.y + y;
 
+        //Boundary checking for valid moves
         if (new_x < 0)
         {
             new_x = 0;
@@ -176,6 +214,14 @@ public class QLearningAgent : MonoBehaviour
         playerNode.HasPlayer = false;
         playerNode = grid[new_x, new_y];
         playerNode.HasPlayer = true;
+    }
+
+    (int, int) GenerateRandomStart()
+    {
+        int x = Random.Range(0, rows);
+        int y = Random.Range(0, cols);
+
+        return (x, y);
     }
 
     int ArgMax(float[] array)

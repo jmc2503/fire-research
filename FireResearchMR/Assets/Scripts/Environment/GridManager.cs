@@ -10,7 +10,6 @@ public class GridManager : MonoBehaviour
     public PlayerManager playerManager;
 
     [Header("PARAMETERS")]
-    public bool AR_ENABLED;
     public int GridRows;
     public int GridColumns;
     public float BoxSeparation;
@@ -31,63 +30,30 @@ public class GridManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (!AR_ENABLED)
+        Renderer renderer = gridBox.GetComponent<Renderer>();
+        Vector3 gridBoxSize = renderer.bounds.size;
+
+        //Establish constants
+        widthJump = gridBoxSize.x + BoxSeparation;
+        heightJump = gridBoxSize.z + BoxSeparation;
+
+        SetPlaneVariables(gridFloor);
+
+        gridWorldSize.x = widthJump * GridRows;
+        gridWorldSize.y = heightJump * GridColumns;
+
+        nodeRadius = widthJump / 2;
+
+        grid = new Node[GridRows, GridColumns];
+
+        CreateGrid(grid);
+        if (playerManager != null)
         {
-
-            Renderer renderer = gridBox.GetComponent<Renderer>();
-            Vector3 gridBoxSize = renderer.bounds.size;
-
-            //Establish constants
-            widthJump = gridBoxSize.x + BoxSeparation;
-            heightJump = gridBoxSize.z + BoxSeparation;
-
-            SetPlaneVariables(gridFloor);
-
-            gridWorldSize.x = widthJump * GridRows;
-            gridWorldSize.y = heightJump * GridColumns;
-
-            nodeRadius = widthJump / 2;
-
-            grid = new Node[GridRows, GridColumns];
-
-            CreateGrid(grid);
-            playerManager.PlayerStart();
-            fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
-        }
-        else
-        {
-            this.enabled = false;
-        }
-    }
-
-
-    public void ARStart()
-    {
-        if (AR_ENABLED)
-        {
-            this.enabled = true;
-            Renderer renderer = gridBox.GetComponent<Renderer>();
-            Vector3 gridBoxSize = renderer.bounds.size;
-
-            //Establish constants
-            widthJump = gridBoxSize.x + BoxSeparation;
-            heightJump = gridBoxSize.z + BoxSeparation;
-
-            SetPlaneVariables(gridFloor);
-
-            gridWorldSize.x = widthJump * GridRows;
-            gridWorldSize.y = heightJump * GridColumns;
-
-            nodeRadius = widthJump / 2;
-
-            grid = new Node[GridRows, GridColumns];
-
-            CreateGrid(grid);
-            fireManager.enabled = true;
             playerManager.PlayerStart();
             fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
         }
     }
+
 
     public void CreateGrid(Node[,] grid)
     {

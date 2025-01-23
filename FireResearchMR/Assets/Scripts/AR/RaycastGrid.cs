@@ -55,7 +55,6 @@ public class RayCastGrid : MonoBehaviour
             {
                 gridManager.gameObject.transform.position = hitpose.position;
                 gridManager.gridStartingCorner = hitpose.position;
-                gridManager.ARStart();
                 gridCreated = true;
             }
         }
