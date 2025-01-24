@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Newtonsoft.Json;
 
 public class QLearningAgent : MonoBehaviour
 {
@@ -53,12 +55,13 @@ public class QLearningAgent : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    async void Update()
     {
         //Only allow training to occur once using trainingComplete flag variable
         if (!trainingComplete && Input.GetKeyDown(KeyCode.Space))
         {
-            Train();
+            await Train();
+            SaveDictionary(qTable);
             trainingComplete = true;
         }
     }
@@ -77,7 +80,7 @@ public class QLearningAgent : MonoBehaviour
         }
     }
 
-    async void Train()
+    async Task Train()
     {
         //Loop through episodes
         for (int episode = 0; episode < NUM_EPISODES; episode++)
@@ -268,6 +271,24 @@ public class QLearningAgent : MonoBehaviour
         }
 
         return maxValue;
+    }
+
+    void SaveDictionary(Dictionary<(int, int), float[]> dict)
+    {
+
+        var serializableDict = new Dictionary<string, float[]>();
+        foreach (var kvp in dict)
+        {
+            serializableDict.Add($"({kvp.Key.Item1}, {kvp.Key.Item2})", kvp.Value);
+        }
+
+        string json = JsonConvert.SerializeObject(dict, Formatting.Indented);
+
+
+        string filePath = Path.Combine(Application.persistentDataPath, "dictionary.json");
+        File.WriteAllText(filePath, json);
+        Debug.Log($"Dictionary saved to: {filePath}");
+
     }
 
 }

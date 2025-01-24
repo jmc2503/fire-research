@@ -160,7 +160,6 @@ MonoBehaviour:
   GridColumns: 6
   BoxSeparation: 0.05
   gridStartingCorner: {x: 2, y: 0, z: 2}
-  fireStartPoint: {x: 2, y: 2}
   gridFloor: {fileID: 646939505}
   gridBox: {fileID: 8019379788074679879, guid: 1d3235be6a02950488398f1d38f5a6d1, type: 3}
   materials:
@@ -195,6 +194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridManager: {fileID: 467957172}
+  playerPathFinder: {fileID: 0}
   FIRE_SPREAD_PROBABILITY: 0.2
 --- !u!114 &467957175
 MonoBehaviour:
@@ -211,14 +211,12 @@ MonoBehaviour:
   LEARNING_RATE: 0.1
   DISCOUNT: 0.95
   EPSILON: 0.9
-  EPS_DECAY: 0.9
+  EPS_DECAY: 0.995
   NUM_EPISODES: 1000
   EPISODE_LENGTH: 100
   FIRE_REWARD: 25
   MOVE_PENALTY: 1
   GridManager: {fileID: 467957172}
-  fireStartPos: {x: 4, y: 4}
-  playerStartPos: {x: 0, y: 0}
 --- !u!1 &646939505
 GameObject:
   m_ObjectHideFlags: 0

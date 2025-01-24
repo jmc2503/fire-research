@@ -9,6 +9,9 @@ public class Node
     public GameObject nodeObject;
     public int x;
     public int y;
+    public int gCost;
+    public int hCost;
+
 
 
     private bool onFire;
@@ -26,6 +29,14 @@ public class Node
         this.hasPlayer = false;
         this.hidden = true;
         this.materials = _materials;
+    }
+
+    public int fCost
+    {
+        get
+        {
+            return gCost + hCost;
+        }
     }
 
     public bool Hidden

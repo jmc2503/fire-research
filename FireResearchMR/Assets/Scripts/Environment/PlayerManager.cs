@@ -9,6 +9,7 @@ public class PlayerManager : MonoBehaviour
     [Header("SCRIPTS")]
     public GridManager gridManager;
     public FireManager fireManager;
+    public PlayerPathFinder playerPathFinder;
 
     [Header("PARAMETERS")]
     public int viewDistance;
@@ -59,6 +60,8 @@ public class PlayerManager : MonoBehaviour
                 {
                     fireManager.PutOutFire(currNode);
                 }
+
+                playerPathFinder.FindPath(currNode);
 
                 //Spread the fire and checkvisibilty
                 fireManager.SpreadFire();

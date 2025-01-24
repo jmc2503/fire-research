@@ -6,6 +6,7 @@ public class FireManager : MonoBehaviour
 {
     [Header("SCRIPTS")]
     public GridManager gridManager;
+    public PlayerPathFinder playerPathFinder;
 
     [Header("PARAMETERS")]
     public float FIRE_SPREAD_PROBABILITY;
@@ -16,6 +17,7 @@ public class FireManager : MonoBehaviour
     {
         startNode.OnFire = true;
         fireList.Add(startNode);
+        playerPathFinder.fireNode = startNode;
     }
 
     public void PutOutFire(Node currNode)

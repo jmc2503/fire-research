@@ -14,7 +14,6 @@ public class GridManager : MonoBehaviour
     public int GridColumns;
     public float BoxSeparation;
     public Vector3 gridStartingCorner;
-    public Vector2 fireStartPoint;
 
     [Header("GAMEOBJECTS")]
     public GameObject gridFloor;
@@ -26,6 +25,7 @@ public class GridManager : MonoBehaviour
     private float widthJump;
     private float heightJump;
     private Vector2 gridWorldSize;
+    private bool gridBoxesHidden = false;
 
     // Start is called before the first frame update
     void Start()
@@ -50,8 +50,16 @@ public class GridManager : MonoBehaviour
         if (playerManager != null)
         {
             playerManager.PlayerStart();
-            fireManager.StartFire(grid[(int)fireStartPoint.x, (int)fireStartPoint.y]);
+            fireManager.StartFire(GetRandomStartNode());
         }
+    }
+
+    Node GetRandomStartNode()
+    {
+        int x = UnityEngine.Random.Range(0, GridRows);
+        int y = UnityEngine.Random.Range(0, GridColumns);
+
+        return grid[x, y];
     }
 
 
@@ -120,6 +128,65 @@ public class GridManager : MonoBehaviour
         return availableNodes;
     }
 
+    public Node GetNodeFromCoords(Node node, int new_x, int new_y)
+    {
+        int checkX = node.x + new_x;
+        int checkY = node.y + new_y;
+
+        if (checkX >= 0 && checkX < GridRows && checkY >= 0 && checkY < GridColumns)
+        {
+            return grid[checkX, checkY];
+        }
+
+        return node;
+    }
+
+    public void HideGridBoxes()
+    {
+        if (gridBoxesHidden)
+        {
+            foreach (Node node in grid)
+            {
+                node.nodeObject.GetComponent<Renderer>().enabled = false;
+            }
+        }
+        else
+        {
+            foreach (Node node in grid)
+            {
+                node.nodeObject.GetComponent<Renderer>().enabled = true;
+            }
+        }
+
+        gridBoxesHidden = !gridBoxesHidden;
+    }
+
+    public List<Node> GetNeighbors(Node node)
+    {
+        List<Node> neighbors = new List<Node>();
+
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0)
+                {
+                    continue;
+                }
+
+                int checkX = node.x + x;
+                int checkY = node.y + y;
+
+                if (checkX >= 0 && checkX < GridRows && checkY >= 0 && checkY < GridColumns)
+                {
+                    neighbors.Add(grid[checkX, checkY]);
+                }
+            }
+        }
+
+        return neighbors;
+    }
+
     public List<Vector3> GetIndicatorPositions(Node currNode, int viewDistance)
     {
         List<Vector3> positions = new List<Vector3>();
@@ -148,9 +215,6 @@ public class GridManager : MonoBehaviour
             Bounds bounds = plane.GetComponent<MeshFilter>().mesh.bounds;
             Vector3 bottomLeftCorner = plane.transform.TransformPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.min.z));
             Vector3 topRightCorner = plane.transform.TransformPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.max.z));
-
-            Debug.Log(bottomLeftCorner);
-            Debug.Log(topRightCorner);
 
             gridStartingCorner.x = bottomLeftCorner.x;
             gridStartingCorner.y = bottomLeftCorner.y + 0.1f;
