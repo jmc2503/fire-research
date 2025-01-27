@@ -30,12 +30,12 @@ class Grid:
 
         #Thing to add: make it so multiple fires 
         if self.agent_pos in self.fire_list:
-            return self.agent_pos, 10, True #found fire, make this false for multiple fires
+            return self.agent_pos, 20, True #found fire, make this false for multiple fires
         else:
             return self.agent_pos, -1, False #move penalty
     
     def spread_fire(self):
-        if self.fire_list.count == 0: #Start fire if not started
+        if len(self.fire_list) == 0: #Start fire if not started
             #Generate random location
             x = random.randint(0, self.size-1)
             y = random.randint(0, self.size-1)
@@ -72,6 +72,8 @@ class Grid:
         grid[self.agent_pos] = "A"
         for row in grid:
             print(" ".join(row))
+        
+        print()
         
 
 

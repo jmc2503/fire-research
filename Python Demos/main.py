@@ -9,6 +9,7 @@ def main():
     agent.train(episodes=500)
 
     state = env.reset()
+    env.display_grid()
     done = False
 
     while not done:
