@@ -34,6 +34,7 @@ class Grid:
         else:
             return self.agent_pos, -1, False #move penalty
     
+    #Start the fire and then spread it at each time step
     def spread_fire(self):
         if len(self.fire_list) == 0: #Start fire if not started
             #Generate random location
@@ -51,6 +52,7 @@ class Grid:
         
         self.fire_list += new_fires #add new fires
 
+    #See where the fire can spread within the grid
     def get_available_spread_locations(self, location):
         available = []
         for x in range(-1, 2):
@@ -63,6 +65,9 @@ class Grid:
         
         return available
 
+    #Displays the grid in the console
+    #A - Agent
+    #F - Fire
     def display_grid(self):
         grid = np.zeros((self.size, self.size), dtype=str)
         grid[:,:] = "0"
