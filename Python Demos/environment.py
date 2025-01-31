@@ -8,10 +8,11 @@ class Grid:
         self.size = n #nxn grid
 
         self.fire_list = [] #list of all locations with fire
-        self.spread_fire() #Start fire
         self.reset()
 
     def reset(self):
+        self.fire_list.clear()
+        self.start_fire()
         self.agent_pos = (0,0)
         return self.agent_pos
 
@@ -28,27 +29,40 @@ class Grid:
         
         self.agent_pos = (x, y)
 
-        #Thing to add: make it so multiple fires 
+        done = False
+        reward = 0
+
         if self.agent_pos in self.fire_list:
-            return self.agent_pos, 20, True #found fire, make this false for multiple fires
+            self.fire_list.remove(self.agent_pos)
+            reward += 20
+            if len(self.fire_list) == 0:
+                done = True
         else:
-            return self.agent_pos, -1, False #move penalty
+            reward += -1
+
+        #Spread fire
+        self.spread_fire()
+
+        #Get next observation
+        next_state = self.get_closest_fire()
+
+        return next_state, reward, done
+    
+    def start_fire(self):
+        x = random.randint(0, self.size-1)
+        y = random.randint(0, self.size-1)
+        self.fire_list.append((x,y))
     
     #Start the fire and then spread it at each time step
     def spread_fire(self):
-        if len(self.fire_list) == 0: #Start fire if not started
-            #Generate random location
-            x = random.randint(0, self.size-1)
-            y = random.randint(0, self.size-1)
-            self.fire_list.append((x,y))
-
-            return
         
         new_fires = []
 
         for fire_loc in self.fire_list:
             if random.random() < self.fire_spread_prob: #spread fire
-                new_fires.append(random.choice(self.get_available_spread_locations(fire_loc))) #create random fire
+                available = self.get_available_spread_locations(fire_loc)
+                if len(available) > 0:
+                    new_fires.append(random.choice(available)) #create random fire
         
         self.fire_list += new_fires #add new fires
 
@@ -59,11 +73,24 @@ class Grid:
             for y in range(-1, 2):
                 if y != x and x + y != 0: #do not allow diagonal fire spread
                     new_location = (location[0] + x, location[1] + y) 
-                    if new_location[0] < self.size and new_location >= 0 and new_location[1] < self.size and new_location[1] >= 0:
+                    if new_location[0] < self.size and new_location[0] >= 0 and new_location[1] < self.size and new_location[1] >= 0:
                         if new_location not in self.fire_list:
                             available.append(new_location)
         
         return available
+    
+    #Return net difference between player and closest fire in tuple form (x, y)
+    def get_closest_fire(self):
+        min_distance = pow(self.size,2)
+        min_tuple = (0, 0)
+        for fire_pos in self.fire_list:
+            x = self.agent_pos[0] - fire_pos[0]
+            y = self.agent_pos[1] - fire_pos[1]
+
+            if abs(x) + abs(y) < min_distance:
+                min_tuple = (x, y)
+        
+        return min_tuple
 
     #Displays the grid in the console
     #A - Agent

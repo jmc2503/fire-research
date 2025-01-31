@@ -7,7 +7,9 @@ public class PathFinding : MonoBehaviour
     GridManager grid;
     public LineRenderer lineRenderer;
 
-    public Transform seeker, target;
+    public Transform seeker;
+
+    public Node fireNode;
 
     void Awake()
     {
@@ -16,7 +18,7 @@ public class PathFinding : MonoBehaviour
 
     void Update()
     {
-        FindPath(seeker.position, target.position);
+        FindPath(seeker.position, fireNode.worldPosition);
     }
 
     void FindPath(Vector3 startPos, Vector3 endPos)

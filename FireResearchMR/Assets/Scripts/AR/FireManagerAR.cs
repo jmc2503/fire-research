@@ -7,6 +7,7 @@ public class FireManagerAR : MonoBehaviour
     [Header("SCRIPTS")]
     public GridManagerAR gridManager;
     public PlayerPathFinderAR playerPathFinder;
+    public PathFindingAR pathFinderAR;
 
     [Header("PARAMETERS")]
     public float FIRE_SPREAD_PROBABILITY;
@@ -18,12 +19,18 @@ public class FireManagerAR : MonoBehaviour
         startNode.OnFire = true;
         fireList.Add(startNode);
         playerPathFinder.fireNode = startNode;
+        pathFinderAR.fireNode = startNode;
     }
 
     public void PutOutFire(Node currNode)
     {
         currNode.OnFire = false;
         fireList.Remove(currNode);
+
+        if (pathFinderAR.fireNode == currNode && fireList.Count > 0)
+        {
+            pathFinderAR.fireNode = fireList[UnityEngine.Random.Range(0, fireList.Count)];
+        }
     }
 
     public void SpreadFire()

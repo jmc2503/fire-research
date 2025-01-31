@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 #Q-Learning Agent class defined by an env and other hyperparameters
 class QLearningAgent:
@@ -54,5 +55,15 @@ class QLearningAgent:
                 
             self.epsilon *= self.epsilon_decay
             self.episode_reward_list.append(episode_reward)
+    
+    def display_reward(self):
+        plt.plot(self.episode_reward_list, marker='o', linestyle='-')
+
+        plt.xlabel("Index")
+        plt.ylabel("Value")
+        plt.title("Line Graph of a List")
+
+        # Show the graph
+        plt.show()
 
         

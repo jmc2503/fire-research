@@ -123,6 +123,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &179930422 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2296141232796561049, guid: cee191920b8eb41b0960b1082a393a3e, type: 3}
+  m_PrefabInstance: {fileID: 204713872}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e76943ac7e7394f3e969f0c048b26639, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &204713872
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -139,6 +150,10 @@ PrefabInstance:
       propertyPath: Colliders
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2296141232796561049, guid: cee191920b8eb41b0960b1082a393a3e, type: 3}
+      propertyPath: MeshMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: 599b01c5f1d17436c89b88cc04257314, type: 2}
     - target: {fileID: 5456522116536683058, guid: cee191920b8eb41b0960b1082a393a3e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -231,6 +246,7 @@ GameObject:
   - component: {fileID: 634830821}
   - component: {fileID: 634830820}
   - component: {fileID: 634830819}
+  - component: {fileID: 634830822}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -252,6 +268,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 634830820}
   playerPathFinder: {fileID: 1153891663}
+  pathFinderAR: {fileID: 634830822}
   FIRE_SPREAD_PROBABILITY: 0.05
 --- !u!114 &634830820
 MonoBehaviour:
@@ -291,6 +308,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &634830822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634830818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdd5602d9d896174bb29f2afd41e7e32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lineRenderer: {fileID: 1163706238}
+  seeker: {fileID: 1348328556}
 --- !u!1 &690330300
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,7 +367,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3613868102660323786, guid: c2e00db6d2dfa42ac8d821db8d493a44, type: 3}
       propertyPath: SceneSettings.RoomIndex
-      value: 5
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 3613868102660323786, guid: c2e00db6d2dfa42ac8d821db8d493a44, type: 3}
       propertyPath: SceneSettings.DataSource
@@ -454,6 +485,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 634830820}
+  effectMeshMaterial: {fileID: 2100000, guid: 599b01c5f1d17436c89b88cc04257314, type: 2}
+  effectmesh: {fileID: 179930422}
 --- !u!1001 &1153891658
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -621,6 +654,7 @@ MonoBehaviour:
   fireManager: {fileID: 634830819}
   playerPathFinder: {fileID: 1153891663}
   viewDistance: 5
+  viewIndicatorsOn: 0
   viewDistanceIndicator: {fileID: 5597997230458015720, guid: 5187241e638e5c74986a6e0102b0fcd8, type: 3}
 --- !u!1 &1163706237
 GameObject:
@@ -906,6 +940,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1348328556 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400002, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
+  m_PrefabInstance: {fileID: 1153891658}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1352541225
 GameObject:
   m_ObjectHideFlags: 0

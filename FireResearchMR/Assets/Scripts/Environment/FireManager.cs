@@ -7,6 +7,7 @@ public class FireManager : MonoBehaviour
     [Header("SCRIPTS")]
     public GridManager gridManager;
     public PlayerPathFinder playerPathFinder;
+    public PathFinding pathfinder;
 
     [Header("PARAMETERS")]
     public float FIRE_SPREAD_PROBABILITY;
@@ -18,12 +19,18 @@ public class FireManager : MonoBehaviour
         startNode.OnFire = true;
         fireList.Add(startNode);
         playerPathFinder.fireNode = startNode;
+        pathfinder.fireNode = startNode;
     }
 
     public void PutOutFire(Node currNode)
     {
         currNode.OnFire = false;
         fireList.Remove(currNode);
+
+        if (pathfinder.fireNode == currNode && fireList.Count > 0)
+        {
+            pathfinder.fireNode = fireList[UnityEngine.Random.Range(0, fireList.Count)];
+        }
     }
 
     public void SpreadFire()

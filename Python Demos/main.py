@@ -4,10 +4,11 @@ from algorithm import QLearningAgent
 
 def main():
     #Declare the grid and the agent
-    env = Grid(0.25, 5)
+    env = Grid(0.1, 5)
     agent = QLearningAgent(env)
 
     agent.train(episodes=500)
+    agent.display_reward()
 
     #Display results of training
     state = env.reset()

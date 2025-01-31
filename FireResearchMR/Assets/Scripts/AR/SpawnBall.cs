@@ -11,7 +11,7 @@ public class SpawnBall : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryHandTrigger))
         {
             GameObject spawnedBall = Instantiate(prefab, transform.position, Quaternion.identity);
             Rigidbody spawnedBallRB = spawnedBall.GetComponent<Rigidbody>();
