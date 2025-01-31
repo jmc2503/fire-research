@@ -13,6 +13,7 @@ public class PlayerManager : MonoBehaviour
 
     [Header("PARAMETERS")]
     public int viewDistance;
+    public bool viewDistanceOn;
 
     [Header("GAMEOBJECTS")]
     public GameObject viewDistanceIndicator;
@@ -24,14 +25,17 @@ public class PlayerManager : MonoBehaviour
 
     public void PlayerStart()
     {
-        viewIndicators = new List<GameObject>();
-        for (int i = -viewDistance; i <= viewDistance; i++)
+        if (viewDistanceOn)
         {
-            for (int j = -viewDistance; j <= viewDistance; j++)
+            viewIndicators = new List<GameObject>();
+            for (int i = -viewDistance; i <= viewDistance; i++)
             {
-                if (Math.Abs(i) + Math.Abs(j) <= viewDistance && Math.Abs(i) + Math.Abs(j) != 0)
+                for (int j = -viewDistance; j <= viewDistance; j++)
                 {
-                    viewIndicators.Add(Instantiate(viewDistanceIndicator, Vector3.zero, Quaternion.identity));
+                    if (Math.Abs(i) + Math.Abs(j) <= viewDistance && Math.Abs(i) + Math.Abs(j) != 0)
+                    {
+                        viewIndicators.Add(Instantiate(viewDistanceIndicator, Vector3.zero, Quaternion.identity));
+                    }
                 }
             }
         }
@@ -65,8 +69,13 @@ public class PlayerManager : MonoBehaviour
 
                 //Spread the fire and checkvisibilty
                 fireManager.SpreadFire();
-                fireManager.SetFireVisibility(currNode, viewDistance);
-                DrawViewIndicators(currNode);
+
+                if (viewDistanceOn)
+                {
+                    fireManager.SetFireVisibility(currNode, viewDistance);
+                    DrawViewIndicators(currNode);
+                }
+
             }
 
             lastNode = currNode;

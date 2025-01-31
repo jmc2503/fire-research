@@ -11,6 +11,7 @@ public class Node
     public int y;
     public int gCost;
     public int hCost;
+    public Node parent;
 
 
 
@@ -27,7 +28,7 @@ public class Node
         this.worldPosition = _worldPosition;
         this.onFire = false;
         this.hasPlayer = false;
-        this.hidden = true;
+        this.hidden = false;
         this.materials = _materials;
     }
 
