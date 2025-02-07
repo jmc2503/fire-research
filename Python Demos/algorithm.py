@@ -1,10 +1,11 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+#icon
 
 #Q-Learning Agent class defined by an env and other hyperparameters
 class QLearningAgent:
-    def __init__(self, env, learning_rate=0.1, discount_factor=0.95, epsilon=0.2, epsilon_decay=0.98):
+    def __init__(self, env, learning_rate=0.1, discount_factor=0.95, epsilon=0.9, epsilon_decay=0.98):
         #External environment
         self.env = env
         
@@ -23,13 +24,13 @@ class QLearningAgent:
     #Choose action with epsilon-greedy policy 
     def choose_action(self, state):
         if random.random() < self.epsilon:
-            return random.randint(0, 3)
+            return random.randint(0, 5)
         else:
-            return np.argmax([self.get_q_value(state, action) for action in range(4)])
+            return np.argmax([self.get_q_value(state, action) for action in range(6)])
     
     #Update the current state, action q-value with the Q-Learning equation based on reward and future Q
     def update_q_value(self, state, action, reward, next_state):
-        max_future_q = max([self.get_q_value(next_state, action) for action in range(4)])
+        max_future_q = max([self.get_q_value(next_state, action) for action in range(6)])
         current_q = self.get_q_value(state, action)
 
         new_q = current_q + self.learning_rate * (reward + self.discount_factor * max_future_q - current_q)
