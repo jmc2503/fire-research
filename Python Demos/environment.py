@@ -103,7 +103,7 @@ class Grid:
                 self.num_fires -= 1
                 return 10
                 
-        return -1 #move penalty
+        return -5 #move penalty
     
     def translate_agent_pos(self):
         return self.size_y * self.agent_pos[0] + self.agent_pos[1]
@@ -166,7 +166,7 @@ class Grid:
     #Displays the grid using matplotlib
     def display_grid(self):
         row, col = self.agent_pos
-        self.agent_plot.set_data(col, row)  # Flip y-axis
+        self.agent_plot.set_data([col], [row])  # Flip y-axis
 
         [p.remove() for p in reversed(self.ax.patches)]
 

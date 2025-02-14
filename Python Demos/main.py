@@ -3,6 +3,8 @@ from environment import Grid
 from algorithm import QLearningAgent
 import matplotlib.pyplot as plt
 
+max_steps = 50
+
 def main():
     #Declare the grid and the agent
     env = Grid(0.1, 2, 2)
@@ -16,7 +18,7 @@ def main():
     env.display_grid()
     done = False
 
-    while not done:
+    for i in range(max_steps):
         action = agent.choose_action(state)
         state, _, done = env.step(action)
         env.display_grid()
