@@ -129,13 +129,36 @@ class ShortestPathAgent:
             path.append(current)
         path.reverse()
         return path
+    
+    def get_action_from_positions(self, start, next_step):
+        if next_step[0] == start[0] + 1: #right
+            return 1
+        elif next_step[0] == start[0] - 1: #left
+            return 0
+        elif next_step[1] == start[1] + 1: #up
+            return 3
+        elif next_step[1] == start[1] - 1: #down
+            return 2
+        else: #do nothing
+            return 5
 
     def choose_action(self, state):
-        start = self.env.get_agent_position(state)
-        goal = self.env.get_closest_fire_position(state)
-        path = self.shortest_path(start, goal)
-        if len(path) > 1:
-            next_step = path[1]
-            return self.env.get_action_from_positions(start, next_step)
-        return self.env.get_random_action()
+        start = state[0] #agent_pos
+
+        shortest_path = None
+
+        for x in range(self.env.size_x):
+            for y in range(self.env.size_y):
+                if state[1][x][y] == 1:
+                    goal = (x, y)
+                    new_path = self.shortest_path(start, goal)
+                    if shortest_path is None or len(new_path) < len(shortest_path):
+                        shortest_path = new_path
+
+
+        if shortest_path and len(shortest_path) > 1: #move in proper direction
+            next_step = shortest_path[1]
+            return self.get_action_from_positions(start, next_step)
+        else:
+            return 4 #clear_fire
         

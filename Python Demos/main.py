@@ -1,10 +1,10 @@
 #Allow user to show grid environment
 from environment import Grid
-from algorithm import QLearningAgent
+from algorithm import QLearningAgent, ShortestPathAgent
 import matplotlib.pyplot as plt
 
 max_steps = 50
-validation_runs = 10000
+validation_runs = 100
 
 #To Do List
 #Make Q-Learning Better
@@ -14,20 +14,22 @@ validation_runs = 10000
 
 def main():
     #Declare the grid and the agent
-    env = Grid(0.7, 2, 2)
+    env = Grid(0.7, 3, 3)
+    
     agent = QLearningAgent(env)
 
     agent.train(episodes=2000)
-    agent.display_reward()
 
     #Display results of training
-    state = env.reset()
+    state = env.reset(505)
     done = False
 
-    successes = 0 
+    successes = 0
+    total_steps = 0
 
     for j in range(validation_runs):
         for i in range(max_steps):
+            total_steps += 1
             action = agent.choose_action(state)
             state, _, done = env.step(action)
             
@@ -37,8 +39,31 @@ def main():
         
         env.reset()
     
-    print(f"Success Rate: {successes}")
-    plt.waitforbuttonpress()
+    print(f"Q-Learning Success Rate: {successes}")
+    print(f"Q-Learning Total Steps: {total_steps}")
+
+    agent = ShortestPathAgent(env)
+
+    state = env.reset(505)
+    successes = 0
+    total_steps = 0
+
+    for j in range(validation_runs):
+        for i in range(max_steps):
+            total_steps += 1
+            action = agent.choose_action(state)
+            state, _, done = env.step(action)
+
+            if done:
+                successes += 1
+                break
+
+        env.reset()
+    
+    print(f"Shortest Path Success Rate: {successes}")
+    print(f"Shortest Path Total Steps: {total_steps}")
+
+
         
 
 if __name__ == "__main__":

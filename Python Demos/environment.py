@@ -118,9 +118,6 @@ class Grid:
                 
         return REWARDS['move_penalty'] #move penalty
     
-    def translate_agent_pos(self):
-        return self.size_y * self.agent_pos[0] + self.agent_pos[1]
-    
     #Start the fire and then spread it at each time step
     def spread_fire(self):
         
