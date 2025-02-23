@@ -27,9 +27,15 @@ class QLearningAgent:
         return self.q_table.get((state, action), 0.0) #If entry not found, return default 0.0 value
 
     #Choose action with epsilon-greedy policy 
-    def choose_action(self, state):
-        if random.random() < self.epsilon:
-            return random.randint(0, 5)
+    def choose_action(self, state, training=False):
+        #Only choose random actions if training
+        if training:
+            if state[1][state[0][0]][state[0][1]] == 1: #If fire is on agent, clear it
+                return 4
+            elif random.random() < self.epsilon:
+                return random.randint(0, 5)
+            else:
+                return np.argmax([self.get_q_value(state, action) for action in range(6)])
         else:
             return np.argmax([self.get_q_value(state, action) for action in range(6)])
     
@@ -49,13 +55,14 @@ class QLearningAgent:
             step_count = 0
             for step in range(max_steps): #max_steps stops infinite looping
                 #Get action and step through the environment
-                action = self.choose_action(state)
+                action = self.choose_action(state,training=True)
                 next_state, reward, done = self.env.step(action)
                 self.update_q_value(state, action, reward, next_state)
-                state = next_state
-
+                
                 if self.visualize and episode != 0 and episode % 200 == 0:
                     self.env.display_grid(episode)
+                
+                state = next_state
 
                 episode_reward += reward
                 step_count += 1
@@ -69,6 +76,7 @@ class QLearningAgent:
             self.epsiode_steps_list.append(step_count)
     
     def display_reward(self):
+        plt.figure()
         plt.cla()
         plt.plot(self.episode_reward_list, marker='', linestyle='-')
         plt.plot(self.epsiode_steps_list, marker='', linestyle='-')
@@ -82,8 +90,9 @@ class QLearningAgent:
 
 #Agent which follows A* pathfinding algorithm to get closest fire
 class ShortestPathAgent:
-    def __init__(self, env):
+    def __init__(self, env, visualize=False):
         self.env = env
+        self.visualize = visualize
     
     def heuristic(self, start, goal):
         return abs(start[0] - goal[0]) + abs(start[1] - goal[1])
@@ -155,6 +164,8 @@ class ShortestPathAgent:
                     if shortest_path is None or len(new_path) < len(shortest_path):
                         shortest_path = new_path
 
+        if self.visualize:
+            self.env.display_grid(path=shortest_path)
 
         if shortest_path and len(shortest_path) > 1: #move in proper direction
             next_step = shortest_path[1]

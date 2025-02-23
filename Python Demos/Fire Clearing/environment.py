@@ -2,7 +2,7 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, FancyArrowPatch
 
 #Change state information
     #State becomes (pos, fire grid)
@@ -43,8 +43,9 @@ class Grid:
                     fire_patch = Rectangle((y - 0.5, x - 0.5), 1, 1, color='orange', alpha=0.8)
                     self.ax.add_patch(fire_patch)
 
-        plt.ion()  # Turn on interactive mode
-        plt.show()
+
+    def close_plot(self):
+        plt.close(self.fig)
 
     def reset(self, seed=None):
 
@@ -167,7 +168,7 @@ class Grid:
 
 
     #Displays the grid using matplotlib
-    def display_grid(self,episode=None):
+    def display_grid(self,episode=None, path=None):
         row, col = self.agent_pos
         self.agent_plot.set_data([col], [row])  # Flip y-axis
 
@@ -178,6 +179,13 @@ class Grid:
                 if self.fire_grid[x][y] == 1:
                     fire_patch = Rectangle((y - 0.5, x - 0.5), 1, 1, color='orange', alpha=0.8)
                     self.ax.add_patch(fire_patch)
+        
+        if path is not None:
+            for i in range(len(path) - 1):
+                start = path[i]
+                end = path[i+1]
+                arrow = FancyArrowPatch((start[1], start[0]), (end[1], end[0]), mutation_scale=15, arrowstyle='->', color='blue')
+                self.ax.add_patch(arrow)
 
         if episode is not None:
             self.ax.set_title(f"Episode {episode}")
