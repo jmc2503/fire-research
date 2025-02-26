@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PathFinding : MonoBehaviour
+public class EscapePathFinder : MonoBehaviour
 {
-    GridManager grid;
+    GridManagerEscape grid;
     public LineRenderer lineRenderer;
 
     void Awake()
     {
-        grid = GetComponent<GridManager>();
+        grid = GetComponent<GridManagerEscape>();
     }
 
     public List<Node> FindPath(Vector3 startPos, Vector3 endPos)
@@ -88,7 +88,7 @@ public class PathFinding : MonoBehaviour
         Vector3[] positions = new Vector3[path.Count];
         for (int i = 0; i < path.Count; i++)
         {
-            positions[i] = path[i].worldPosition;
+            positions[i] = path[i].worldPosition + Vector3.up * 0.5f;
         }
         lineRenderer.positionCount = path.Count;
         lineRenderer.SetPositions(positions);
@@ -99,13 +99,6 @@ public class PathFinding : MonoBehaviour
         int dstX = Mathf.Abs(a.x - b.x);
         int dstY = Mathf.Abs(a.y - b.y);
 
-        if (dstX > dstY)
-        {
-            return 14 * dstY + 10 * (dstX - dstY);
-        }
-        else
-        {
-            return 14 * dstX + 10 * (dstY - dstX);
-        }
+        return dstX + dstY;
     }
 }

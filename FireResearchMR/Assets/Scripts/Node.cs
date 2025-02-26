@@ -14,7 +14,7 @@ public class Node
     public Node parent;
 
 
-
+    private bool exit;
     private bool onFire;
     private bool hasPlayer;
     private bool hidden;
@@ -29,6 +29,7 @@ public class Node
         this.onFire = false;
         this.hasPlayer = false;
         this.hidden = false;
+        this.exit = false;
         this.materials = _materials;
     }
 
@@ -70,6 +71,16 @@ public class Node
         }
     }
 
+    public bool Exit
+    {
+        get { return exit; }
+        set
+        {
+            exit = value;
+            SetExitMaterial(value);
+        }
+    }
+
     private void SetFireMaterial(bool value)
     {
         Transform fireTranform = nodeObject.transform.Find("MediumFlames");
@@ -89,6 +100,18 @@ public class Node
             {
                 fireTranform.gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void SetExitMaterial(bool value)
+    {
+        if (value)
+        {
+            this.nodeObject.GetComponent<MeshRenderer>().material = materials[3];
+        }
+        else
+        {
+            this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
         }
     }
 
