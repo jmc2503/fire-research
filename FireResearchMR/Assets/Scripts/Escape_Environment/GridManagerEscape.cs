@@ -8,8 +8,10 @@ using UnityEngine.Video;
 public class GridManagerEscape : MonoBehaviour
 {
     [Header("PARAMETERS")]
+    public bool AREnabled;
     public float BoxSeparation;
     public float FireSpreadProbability;
+    public LayerMask unwalkableMask;
 
     [Header("GAMEOBJECTS")]
     public GameObject user; // The user object
@@ -32,14 +34,54 @@ public class GridManagerEscape : MonoBehaviour
     private int GridColumns; //# of cols in the grid
     private Vector3 gridStartingCorner;
     private Vector2 gridWorldSize; //total grid Size
+    private bool start = false; //Check if the start has been completed
+    private bool gridBoxesHidden = false; //Check if the grid boxes are hidden
 
     private Node lastNode;
+
+    private void OnEnable()
+    {
+        FloorSpawnAR.OnFloorSpawned += ARStart;
+    }
+
+    private void OnDisable()
+    {
+        FloorSpawnAR.OnFloorSpawned -= ARStart;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         pathFinder = GetComponent<EscapePathFinder>();
 
+        if (!AREnabled)
+        {
+            Vector3 gridBoxSize = gridBox.GetComponent<Renderer>().bounds.size;
+
+            widthJump = gridBoxSize.x + BoxSeparation;
+            heightJump = gridBoxSize.z + BoxSeparation;
+
+            SetPlaneVariables(gridPlane);
+
+            gridWorldSize.x = widthJump * GridRows;
+            gridWorldSize.y = heightJump * GridColumns;
+
+            nodeRadius = widthJump / 2;
+
+            grid = new Node[GridRows, GridColumns];
+            fireList = new List<Node>();
+
+            CreateGrid();
+            CreateExits();
+            CreateFire();
+
+            start = true;
+        }
+    }
+
+    public void ARStart(GameObject floor)
+    {
+        gridPlane = floor;
         Vector3 gridBoxSize = gridBox.GetComponent<Renderer>().bounds.size;
 
         widthJump = gridBoxSize.x + BoxSeparation;
@@ -58,11 +100,13 @@ public class GridManagerEscape : MonoBehaviour
         CreateGrid();
         CreateExits();
         CreateFire();
+
+        start = true;
     }
 
     void Update()
     {
-        if (user != null)
+        if (user != null && start)
         {
             Node currNode = GetNodeFromWorldPoint(user.transform.position);
             if (currNode != lastNode)
@@ -122,7 +166,8 @@ public class GridManagerEscape : MonoBehaviour
             for (int j = 0; j < GridColumns; j++)
             {
                 Vector3 worldPos = new Vector3(gridStartingCorner.x + (i * widthJump + nodeRadius), gridStartingCorner.y, gridStartingCorner.z + (j * heightJump + nodeRadius));
-                grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, Quaternion.identity), materials);
+                bool walkable = !Physics.CheckSphere(worldPos, nodeRadius * 0.9f, unwalkableMask);
+                grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, Quaternion.identity), materials, walkable);
             }
         }
     }
@@ -205,15 +250,36 @@ public class GridManagerEscape : MonoBehaviour
         if (plane != null)
         {
             Bounds bounds = plane.GetComponent<MeshFilter>().mesh.bounds;
-            Vector3 bottomLeftCorner = plane.transform.TransformPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.min.z));
-            Vector3 topRightCorner = plane.transform.TransformPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.max.z));
+            Vector3 bottomLeftCorner = plane.transform.TransformPoint(bounds.min);
+            Vector3 topRightCorner = plane.transform.TransformPoint(bounds.max);
 
-            gridStartingCorner.x = bottomLeftCorner.x;
+            gridStartingCorner.x = Math.Min(bottomLeftCorner.x, topRightCorner.x);
             gridStartingCorner.y = bottomLeftCorner.y + 0.1f;
-            gridStartingCorner.z = bottomLeftCorner.z;
+            gridStartingCorner.z = Math.Min(bottomLeftCorner.z, topRightCorner.z);
 
-            GridRows = (int)Math.Floor((topRightCorner.x - bottomLeftCorner.x) / widthJump);
-            GridColumns = (int)Math.Floor((topRightCorner.z - bottomLeftCorner.z) / heightJump);
+            GridRows = (int)Math.Floor(Math.Abs(topRightCorner.x - bottomLeftCorner.x) / widthJump);
+            GridColumns = (int)Math.Floor(Math.Abs(topRightCorner.z - bottomLeftCorner.z) / heightJump);
         }
     }
+
+    public void HideGridBoxes()
+    {
+        if (gridBoxesHidden)
+        {
+            foreach (Node node in grid)
+            {
+                node.nodeObject.GetComponent<Renderer>().enabled = false;
+            }
+        }
+        else
+        {
+            foreach (Node node in grid)
+            {
+                node.nodeObject.GetComponent<Renderer>().enabled = true;
+            }
+        }
+
+        gridBoxesHidden = !gridBoxesHidden;
+    }
+
 }

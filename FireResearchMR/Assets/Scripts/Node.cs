@@ -12,6 +12,7 @@ public class Node
     public int gCost;
     public int hCost;
     public Node parent;
+    public bool walkable;
 
 
     private bool exit;
@@ -20,7 +21,7 @@ public class Node
     private bool hidden;
     private Material[] materials;
 
-    public Node(int _x, int _y, Vector3 _worldPosition, GameObject _nodeObject, Material[] _materials)
+    public Node(int _x, int _y, Vector3 _worldPosition, GameObject _nodeObject, Material[] _materials, bool walkable)
     {
         this.x = _x;
         this.y = _y;
@@ -31,6 +32,14 @@ public class Node
         this.hidden = false;
         this.exit = false;
         this.materials = _materials;
+
+        this.walkable = walkable;
+
+        if (!walkable)
+        {
+            this.nodeObject.GetComponent<MeshRenderer>().material = materials[4];
+        }
+
     }
 
     public int fCost
