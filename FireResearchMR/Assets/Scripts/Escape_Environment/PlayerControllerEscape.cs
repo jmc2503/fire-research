@@ -33,15 +33,18 @@ public class PlayerControllerEscape : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.B) || OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
         {
-            if (flag)
+            if (effectmesh != null)
             {
-                effectmesh.HideMesh = true;
-                flag = !flag;
-            }
-            else
-            {
-                effectmesh.HideMesh = false;
-                flag = !flag;
+                if (flag)
+                {
+                    effectmesh.HideMesh = true;
+                    flag = !flag;
+                }
+                else
+                {
+                    effectmesh.HideMesh = false;
+                    flag = !flag;
+                }
             }
         }
     }

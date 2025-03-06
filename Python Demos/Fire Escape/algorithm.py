@@ -53,11 +53,11 @@ class ShortestPathAgent:
     def get_action_from_position(self, start, end):
         if end[0] == start[0] - 1: #left
             return 0
-        if end[0] == start[0] + 1: #right
+        elif end[0] == start[0] + 1: #right
             return 1
-        if end[1] == start[1] - 1: #down
+        elif end[1] == start[1] - 1: #down
             return 2
-        if end[1] == start[1] + 1: #up
+        elif end[1] == start[1] + 1: #up
             return 3
     
     def choose_action(self):
@@ -75,7 +75,7 @@ class ShortestPathAgent:
             
         #Find action based on direction of shortest path from current position (start)
         if len(self.min_path) > 1:
-            next_step = path[1]
+            next_step = self.min_path[1]
             return self.get_action_from_position(start, next_step)
     
 

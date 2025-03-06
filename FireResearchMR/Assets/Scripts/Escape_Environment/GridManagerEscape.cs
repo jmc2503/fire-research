@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using Meta.XR.MRUtilityKit;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -39,6 +41,9 @@ public class GridManagerEscape : MonoBehaviour
 
     private Node lastNode;
 
+    private Vector3 horizontalDirection;
+    private Vector3 verticalDirection;
+
     private void OnEnable()
     {
         FloorSpawnAR.OnFloorSpawned += ARStart;
@@ -61,7 +66,7 @@ public class GridManagerEscape : MonoBehaviour
             widthJump = gridBoxSize.x + BoxSeparation;
             heightJump = gridBoxSize.z + BoxSeparation;
 
-            SetPlaneVariables(gridPlane);
+            NewSetPlaneVariables(gridPlane);
 
             gridWorldSize.x = widthJump * GridRows;
             gridWorldSize.y = heightJump * GridColumns;
@@ -81,13 +86,16 @@ public class GridManagerEscape : MonoBehaviour
 
     public void ARStart(GameObject floor)
     {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        MRUKAnchor floorAnchor = room.FloorAnchor;
+        Bounds bounds = (Bounds)floorAnchor.VolumeBounds;
         gridPlane = floor;
         Vector3 gridBoxSize = gridBox.GetComponent<Renderer>().bounds.size;
 
         widthJump = gridBoxSize.x + BoxSeparation;
         heightJump = gridBoxSize.z + BoxSeparation;
 
-        SetPlaneVariables(gridPlane);
+        NewSetPlaneVariables(gridPlane);
 
         gridWorldSize.x = widthJump * GridRows;
         gridWorldSize.y = heightJump * GridColumns;
@@ -165,7 +173,11 @@ public class GridManagerEscape : MonoBehaviour
         {
             for (int j = 0; j < GridColumns; j++)
             {
-                Vector3 worldPos = new Vector3(gridStartingCorner.x + (i * widthJump + nodeRadius), gridStartingCorner.y, gridStartingCorner.z + (j * heightJump + nodeRadius));
+                Vector3 worldPos = gridStartingCorner + (horizontalDirection * i * widthJump) + (verticalDirection * j * heightJump);
+                worldPos += (nodeRadius * horizontalDirection);
+                worldPos += (nodeRadius * verticalDirection);
+
+                //Vector3 worldPos = new Vector3(gridStartingCorner.x + (i * widthJump + nodeRadius), gridStartingCorner.y, gridStartingCorner.z + (j * heightJump + nodeRadius));
                 bool walkable = !Physics.CheckSphere(worldPos, nodeRadius * 0.9f, unwalkableMask);
                 grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, Quaternion.identity), materials, walkable);
             }
@@ -213,19 +225,31 @@ public class GridManagerEscape : MonoBehaviour
 
         if (x - 1 >= 0)
         {
-            neighbors.Add(grid[x - 1, y]);
+            if (grid[x - 1, y].walkable && grid[x - 1, y].OnFire == false)
+            {
+                neighbors.Add(grid[x - 1, y]);
+            }
         }
         if (x + 1 < GridRows)
         {
-            neighbors.Add(grid[x + 1, y]);
+            if (grid[x + 1, y].walkable && grid[x + 1, y].OnFire == false)
+            {
+                neighbors.Add(grid[x + 1, y]);
+            }
         }
         if (y - 1 >= 0)
         {
-            neighbors.Add(grid[x, y - 1]);
+            if (grid[x, y - 1].walkable && grid[x, y - 1].OnFire == false)
+            {
+                neighbors.Add(grid[x, y - 1]);
+            }
         }
         if (y + 1 < GridColumns)
         {
-            neighbors.Add(grid[x, y + 1]);
+            if (grid[x, y + 1].walkable && grid[x, y + 1].OnFire == false)
+            {
+                neighbors.Add(grid[x, y + 1]);
+            }
         }
 
 
@@ -249,7 +273,9 @@ public class GridManagerEscape : MonoBehaviour
     {
         if (plane != null)
         {
-            Bounds bounds = plane.GetComponent<MeshFilter>().mesh.bounds;
+            Renderer renderer = plane.GetComponent<Renderer>();
+            Bounds bounds = renderer.bounds;
+            //Bounds bounds = plane.GetComponent<MeshFilter>().mesh.bounds;
             Vector3 bottomLeftCorner = plane.transform.TransformPoint(bounds.min);
             Vector3 topRightCorner = plane.transform.TransformPoint(bounds.max);
 
@@ -259,6 +285,46 @@ public class GridManagerEscape : MonoBehaviour
 
             GridRows = (int)Math.Floor(Math.Abs(topRightCorner.x - bottomLeftCorner.x) / widthJump);
             GridColumns = (int)Math.Floor(Math.Abs(topRightCorner.z - bottomLeftCorner.z) / heightJump);
+        }
+    }
+
+    void NewSetPlaneVariables(GameObject plane)
+    {
+        if (plane != null)
+        {
+            MeshFilter meshFilter = plane.GetComponent<MeshFilter>();
+            Bounds bounds = meshFilter.mesh.bounds;
+
+            Vector3[] corners = new Vector3[4];
+
+            Vector3 bottomLeft = new Vector3(bounds.min.x, bounds.min.y, bounds.min.z);
+            Vector3 bottomRight = new Vector3(bounds.max.x, bounds.min.y, bounds.min.z);
+            Vector3 topLeft = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
+            Vector3 topRight = new Vector3(bounds.max.x, bounds.min.y, bounds.max.z);
+
+            // Convert to world space using TransformPoint
+            corners[0] = plane.transform.TransformPoint(bottomLeft);
+            corners[1] = plane.transform.TransformPoint(bottomRight);
+            corners[2] = plane.transform.TransformPoint(topLeft);
+            corners[3] = plane.transform.TransformPoint(topRight);
+
+            gridStartingCorner.x = corners[0].x;
+            gridStartingCorner.y = corners[0].y;
+            gridStartingCorner.z = corners[0].z;
+
+            Debug.Log(corners[0]);
+            Debug.Log(corners[1]);
+            Debug.Log(corners[2]);
+            Debug.Log(corners[3]);
+
+            horizontalDirection = (corners[1] - corners[0]).normalized;
+            verticalDirection = (corners[2] - corners[0]).normalized;
+
+            GridRows = (int)Math.Floor((corners[1] - corners[0]).magnitude / widthJump);
+            GridColumns = (int)Math.Floor((corners[2] - corners[0]).magnitude / heightJump);
+
+            Debug.Log((GridRows, GridColumns));
+
         }
     }
 
