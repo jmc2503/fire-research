@@ -66,7 +66,7 @@ public class GridManagerEscape : MonoBehaviour
             widthJump = gridBoxSize.x + BoxSeparation;
             heightJump = gridBoxSize.z + BoxSeparation;
 
-            NewSetPlaneVariables(gridPlane);
+            SetPlaneVariables(gridPlane);
 
             gridWorldSize.x = widthJump * GridRows;
             gridWorldSize.y = heightJump * GridColumns;
@@ -86,19 +86,19 @@ public class GridManagerEscape : MonoBehaviour
 
     public void ARStart(GameObject floor)
     {
-        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-        MRUKAnchor floorAnchor = room.FloorAnchor;
-        Bounds bounds = (Bounds)floorAnchor.VolumeBounds;
         gridPlane = floor;
         Vector3 gridBoxSize = gridBox.GetComponent<Renderer>().bounds.size;
 
         widthJump = gridBoxSize.x + BoxSeparation;
         heightJump = gridBoxSize.z + BoxSeparation;
 
-        NewSetPlaneVariables(gridPlane);
+        SetPlaneVariables(gridPlane);
 
         gridWorldSize.x = widthJump * GridRows;
         gridWorldSize.y = heightJump * GridColumns;
+
+        Debug.Log(gridWorldSize);
+
 
         nodeRadius = widthJump / 2;
 
@@ -258,49 +258,50 @@ public class GridManagerEscape : MonoBehaviour
 
     public Node GetNodeFromWorldPoint(Vector3 worldPos)
     {
-        float percentX = (worldPos.x - gridStartingCorner.x) / gridWorldSize.x;
-        float percentY = (worldPos.z - gridStartingCorner.z) / gridWorldSize.y;
-        percentX = Mathf.Clamp01(percentX);
-        percentY = Mathf.Clamp01(percentY);
+
+        horizontalDirection.Normalize();
+        verticalDirection.Normalize();
+
+        // Calculate the scalars a (horizontal) and b (vertical)
+        float a = Vector3.Dot(worldPos - gridStartingCorner, horizontalDirection) / gridWorldSize.x;
+        float b = Vector3.Dot(worldPos - gridStartingCorner, verticalDirection) / gridWorldSize.y;
+        float percentX = Mathf.Clamp01(a);
+        float percentY = Mathf.Clamp01(b);
 
         int x = Mathf.FloorToInt(Mathf.Clamp(GridRows * percentX, 0, GridRows - 1));
         int y = Mathf.FloorToInt(Mathf.Clamp(GridColumns * percentY, 0, GridColumns - 1));
 
         return grid[x, y];
+
+
+
+        // float percentX = Math.Abs(worldPos.x - gridStartingCorner.x) / gridWorldSize.x;
+        // float percentY = Math.Abs(worldPos.z - gridStartingCorner.z) / gridWorldSize.y;
+        // percentX = Mathf.Clamp01(percentX);
+        // percentY = Mathf.Clamp01(percentY);
+
+        // int x = Mathf.FloorToInt(Mathf.Clamp(GridRows * percentX, 0, GridRows - 1));
+        // int y = Mathf.FloorToInt(Mathf.Clamp(GridColumns * percentY, 0, GridColumns - 1));
+
+        // return grid[x, y];
     }
 
     void SetPlaneVariables(GameObject plane)
     {
         if (plane != null)
         {
-            Renderer renderer = plane.GetComponent<Renderer>();
-            Bounds bounds = renderer.bounds;
-            //Bounds bounds = plane.GetComponent<MeshFilter>().mesh.bounds;
-            Vector3 bottomLeftCorner = plane.transform.TransformPoint(bounds.min);
-            Vector3 topRightCorner = plane.transform.TransformPoint(bounds.max);
-
-            gridStartingCorner.x = Math.Min(bottomLeftCorner.x, topRightCorner.x);
-            gridStartingCorner.y = bottomLeftCorner.y + 0.1f;
-            gridStartingCorner.z = Math.Min(bottomLeftCorner.z, topRightCorner.z);
-
-            GridRows = (int)Math.Floor(Math.Abs(topRightCorner.x - bottomLeftCorner.x) / widthJump);
-            GridColumns = (int)Math.Floor(Math.Abs(topRightCorner.z - bottomLeftCorner.z) / heightJump);
-        }
-    }
-
-    void NewSetPlaneVariables(GameObject plane)
-    {
-        if (plane != null)
-        {
             MeshFilter meshFilter = plane.GetComponent<MeshFilter>();
             Bounds bounds = meshFilter.mesh.bounds;
 
+
             Vector3[] corners = new Vector3[4];
+
 
             Vector3 bottomLeft = new Vector3(bounds.min.x, bounds.min.y, bounds.min.z);
             Vector3 bottomRight = new Vector3(bounds.max.x, bounds.min.y, bounds.min.z);
-            Vector3 topLeft = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
-            Vector3 topRight = new Vector3(bounds.max.x, bounds.min.y, bounds.max.z);
+            Vector3 topLeft = new Vector3(bounds.min.x, bounds.max.y, bounds.min.z);
+            Vector3 topRight = new Vector3(bounds.max.x, bounds.max.y, bounds.min.z);
+
 
             // Convert to world space using TransformPoint
             corners[0] = plane.transform.TransformPoint(bottomLeft);
@@ -312,10 +313,7 @@ public class GridManagerEscape : MonoBehaviour
             gridStartingCorner.y = corners[0].y;
             gridStartingCorner.z = corners[0].z;
 
-            Debug.Log(corners[0]);
-            Debug.Log(corners[1]);
-            Debug.Log(corners[2]);
-            Debug.Log(corners[3]);
+            Debug.Log(gridStartingCorner);
 
             horizontalDirection = (corners[1] - corners[0]).normalized;
             verticalDirection = (corners[2] - corners[0]).normalized;
@@ -347,5 +345,24 @@ public class GridManagerEscape : MonoBehaviour
 
         gridBoxesHidden = !gridBoxesHidden;
     }
+
+    // void OldSetPlaneVariables(GameObject plane)
+    // {
+    //     if (plane != null)
+    //     {
+    //         Renderer renderer = plane.GetComponent<Renderer>();
+    //         Bounds bounds = renderer.bounds;
+    //         //Bounds bounds = plane.GetComponent<MeshFilter>().mesh.bounds;
+    //         Vector3 bottomLeftCorner = plane.transform.TransformPoint(bounds.min);
+    //         Vector3 topRightCorner = plane.transform.TransformPoint(bounds.max);
+
+    //         gridStartingCorner.x = Math.Min(bottomLeftCorner.x, topRightCorner.x);
+    //         gridStartingCorner.y = bottomLeftCorner.y + 0.1f;
+    //         gridStartingCorner.z = Math.Min(bottomLeftCorner.z, topRightCorner.z);
+
+    //         GridRows = (int)Math.Floor(Math.Abs(topRightCorner.x - bottomLeftCorner.x) / widthJump);
+    //         GridColumns = (int)Math.Floor(Math.Abs(topRightCorner.z - bottomLeftCorner.z) / heightJump);
+    //     }
+    // }
 
 }

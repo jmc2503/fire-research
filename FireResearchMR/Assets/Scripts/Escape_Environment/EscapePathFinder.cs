@@ -85,6 +85,10 @@ public class EscapePathFinder : MonoBehaviour
 
     public void DrawPath(List<Node> path)
     {
+        if (path == null)
+        {
+            return;
+        }
         Vector3[] positions = new Vector3[path.Count];
         for (int i = 0; i < path.Count; i++)
         {
