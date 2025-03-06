@@ -13,11 +13,16 @@ class ShortestPathAgent:
         for direction in directions:
             neighbor = (node[0] + direction[0], node[1] + direction[1])
             if 0 <= neighbor[0] < self.env.size_x and 0 <= neighbor[1] < self.env.size_y:
-                neighbors.append(neighbor)
+                if self.env.fire_grid[neighbor[0]][neighbor[1]] == 0:
+                    neighbors.append(neighbor)
         
         return neighbors
     
     def shortest_path(self, start, goal):
+
+        if self.env.fire_grid[goal[0]][goal[1]] != 0:
+            return []
+        
         open_list = []
         heapq.heappush(open_list,(0, start))
         came_from = {}
@@ -69,7 +74,7 @@ class ShortestPathAgent:
         #Get shortest path
         for exit in self.env.exit_list:
             path = self.shortest_path(start, exit)
-            if len(path) < min_path_len:
+            if len(path) < min_path_len and len(path) != 0:
                 min_path_len = len(path)
                 self.min_path = path
             
@@ -77,6 +82,8 @@ class ShortestPathAgent:
         if len(self.min_path) > 1:
             next_step = self.min_path[1]
             return self.get_action_from_position(start, next_step)
+
+
     
 
 
