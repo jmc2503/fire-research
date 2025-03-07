@@ -10,11 +10,11 @@ public class PlayerControllerEscape : MonoBehaviour
     public HealthBar healthBar;
     public TextMeshProUGUI healthText;
 
-    public GridManagerEscape grid;
-    public EffectMesh effectmesh;
+    public GameObject menu;
+    public Transform head;
+    public float spawnDistance = 2f;
 
     private int currentHealth;
-    private bool flag = false; //flag to toggle effect meshes
 
     // Start is called before the first frame update
     void Start()
@@ -26,27 +26,16 @@ public class PlayerControllerEscape : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.A) || OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+
+        if (Input.GetKeyDown(KeyCode.C) || OVRInput.GetDown(OVRInput.Button.Start))
         {
-            grid.HideGridBoxes();
+            menu.SetActive(!menu.activeSelf);
+
+            menu.transform.position = head.position + new Vector3(head.forward.x, 0, head.forward.z).normalized * spawnDistance;
         }
 
-        if (Input.GetKeyDown(KeyCode.B) || OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
-        {
-            if (effectmesh != null)
-            {
-                if (flag)
-                {
-                    effectmesh.HideMesh = true;
-                    flag = !flag;
-                }
-                else
-                {
-                    effectmesh.HideMesh = false;
-                    flag = !flag;
-                }
-            }
-        }
+        menu.transform.LookAt(new Vector3(head.position.x, menu.transform.position.y, head.position.z));
+        menu.transform.forward *= -1;
     }
 
     public void DamagePlayer(int damage)

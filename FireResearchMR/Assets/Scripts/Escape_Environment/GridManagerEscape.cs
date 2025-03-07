@@ -6,6 +6,7 @@ using Meta.XR.MRUtilityKit;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Video;
+using UnityEngine.UI;
 
 public class GridManagerEscape : MonoBehaviour
 {
@@ -20,6 +21,13 @@ public class GridManagerEscape : MonoBehaviour
     public GameObject gridPlane; // The plane that the grid is placed on
     public GameObject gridBox; // The box prefab placed for each grid space
     public Material[] materials; // The materials that the grid boxes can be
+
+    [Header("UI")]
+    public Slider fireSpreadProbSlider;
+    public TextMeshProUGUI fireSpreadProbText;
+    public Toggle gridBoxesToggle;
+    public Toggle effectMeshToggle;
+    public EffectMesh effectMesh;
 
     public PlayerControllerEscape playerControllerEscape;
 
@@ -58,6 +66,14 @@ public class GridManagerEscape : MonoBehaviour
     void Start()
     {
         pathFinder = GetComponent<EscapePathFinder>();
+
+
+        gridBoxesToggle.onValueChanged.AddListener(ToggleGridBoxesHidden);
+        effectMeshToggle.onValueChanged.AddListener(ToggleEffectMesh);
+
+        fireSpreadProbSlider.value = FireSpreadProbability;
+        fireSpreadProbText.text = "Fire Spread Probability: " + FireSpreadProbability;
+        fireSpreadProbSlider.onValueChanged.AddListener(UpdateFireSpreadProb);
 
         if (!AREnabled)
         {
@@ -110,6 +126,24 @@ public class GridManagerEscape : MonoBehaviour
         CreateFire();
 
         start = true;
+    }
+
+    public void Reset()
+    {
+        foreach (Node node in grid)
+        {
+            node.OnFire = false;
+            node.HasPlayer = false;
+        }
+
+        foreach (Node exit in exitList)
+        {
+            exit.Exit = false;
+        }
+
+        fireList.Clear();
+        CreateExits();
+        CreateFire();
     }
 
     void Update()
@@ -169,6 +203,8 @@ public class GridManagerEscape : MonoBehaviour
 
     void CreateGrid()
     {
+        Vector3 normal = Vector3.Cross(horizontalDirection, verticalDirection).normalized;
+
         for (int i = 0; i < GridRows; i++)
         {
             for (int j = 0; j < GridColumns; j++)
@@ -177,9 +213,11 @@ public class GridManagerEscape : MonoBehaviour
                 worldPos += (nodeRadius * horizontalDirection);
                 worldPos += (nodeRadius * verticalDirection);
 
+                Quaternion rotation = Quaternion.LookRotation(verticalDirection, normal);
+
                 //Vector3 worldPos = new Vector3(gridStartingCorner.x + (i * widthJump + nodeRadius), gridStartingCorner.y, gridStartingCorner.z + (j * heightJump + nodeRadius));
                 bool walkable = !Physics.CheckSphere(worldPos, nodeRadius * 0.9f, unwalkableMask);
-                grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, Quaternion.identity), materials, walkable);
+                grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, rotation), materials, walkable);
             }
         }
     }
@@ -191,6 +229,29 @@ public class GridManagerEscape : MonoBehaviour
 
         grid[x, y].OnFire = true;
         fireList.Add(grid[x, y]);
+    }
+
+    void UpdateFireSpreadProb(float value)
+    {
+        FireSpreadProbability = value;
+        fireSpreadProbText.text = "Fire Spread Probability: " + FireSpreadProbability;
+    }
+
+    void ToggleGridBoxesHidden(bool value)
+    {
+        HideGridBoxes();
+    }
+
+    void ToggleEffectMesh(bool value)
+    {
+        if (value)
+        {
+            effectMesh.HideMesh = false;
+        }
+        else
+        {
+            effectMesh.HideMesh = true;
+        }
     }
 
     void SpreadFire()
