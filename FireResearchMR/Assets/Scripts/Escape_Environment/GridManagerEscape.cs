@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.UI;
+using Oculus.Platform;
 
 public class GridManagerEscape : MonoBehaviour
 {
@@ -45,7 +46,6 @@ public class GridManagerEscape : MonoBehaviour
     private Vector3 gridStartingCorner;
     private Vector2 gridWorldSize; //total grid Size
     private bool start = false; //Check if the start has been completed
-    private bool gridBoxesHidden = false; //Check if the grid boxes are hidden
 
     private Node lastNode;
 
@@ -54,12 +54,12 @@ public class GridManagerEscape : MonoBehaviour
 
     private void OnEnable()
     {
-        FloorSpawnAR.OnFloorSpawned += ARStart;
+        FloorSpawnAR.OnFloorSpawned += SetFloor;
     }
 
     private void OnDisable()
     {
-        FloorSpawnAR.OnFloorSpawned -= ARStart;
+        FloorSpawnAR.OnFloorSpawned -= SetFloor;
     }
 
     // Start is called before the first frame update
@@ -100,9 +100,21 @@ public class GridManagerEscape : MonoBehaviour
         }
     }
 
-    public void ARStart(GameObject floor)
+    public void SetFloor(GameObject floor)
     {
         gridPlane = floor;
+        StartCoroutine(DelayedStart());
+
+    }
+
+    IEnumerator DelayedStart()
+    {
+        yield return new WaitForSeconds(5);
+        ARStart();
+    }
+
+    public void ARStart()
+    {
         Vector3 gridBoxSize = gridBox.GetComponent<Renderer>().bounds.size;
 
         widthJump = gridBoxSize.x + BoxSeparation;
@@ -112,9 +124,6 @@ public class GridManagerEscape : MonoBehaviour
 
         gridWorldSize.x = widthJump * GridRows;
         gridWorldSize.y = heightJump * GridColumns;
-
-        Debug.Log(gridWorldSize);
-
 
         nodeRadius = widthJump / 2;
 
@@ -216,8 +225,17 @@ public class GridManagerEscape : MonoBehaviour
                 Quaternion rotation = Quaternion.LookRotation(verticalDirection, normal);
 
                 //Vector3 worldPos = new Vector3(gridStartingCorner.x + (i * widthJump + nodeRadius), gridStartingCorner.y, gridStartingCorner.z + (j * heightJump + nodeRadius));
-                bool walkable = !Physics.CheckSphere(worldPos, nodeRadius * 0.9f, unwalkableMask);
+
+                bool walkable = true;
+                Collider[] colliders = Physics.OverlapSphere(worldPos, nodeRadius * 0.8f, unwalkableMask);
+
+                if (colliders.Length > 0)
+                {
+                    walkable = false;
+                }
+
                 grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, rotation), materials, walkable);
+
             }
         }
     }
@@ -239,7 +257,10 @@ public class GridManagerEscape : MonoBehaviour
 
     void ToggleGridBoxesHidden(bool value)
     {
-        HideGridBoxes();
+        foreach (Node node in grid)
+        {
+            node.nodeObject.GetComponent<Renderer>().enabled = !node.nodeObject.GetComponent<Renderer>().enabled;
+        }
     }
 
     void ToggleEffectMesh(bool value)
@@ -374,38 +395,36 @@ public class GridManagerEscape : MonoBehaviour
             gridStartingCorner.y = corners[0].y;
             gridStartingCorner.z = corners[0].z;
 
-            Debug.Log(gridStartingCorner);
-
             horizontalDirection = (corners[1] - corners[0]).normalized;
             verticalDirection = (corners[2] - corners[0]).normalized;
 
             GridRows = (int)Math.Floor((corners[1] - corners[0]).magnitude / widthJump);
             GridColumns = (int)Math.Floor((corners[2] - corners[0]).magnitude / heightJump);
 
-            Debug.Log((GridRows, GridColumns));
-
         }
     }
 
-    public void HideGridBoxes()
-    {
-        if (gridBoxesHidden)
-        {
-            foreach (Node node in grid)
-            {
-                node.nodeObject.GetComponent<Renderer>().enabled = false;
-            }
-        }
-        else
-        {
-            foreach (Node node in grid)
-            {
-                node.nodeObject.GetComponent<Renderer>().enabled = true;
-            }
-        }
+    //DEBUGGING / OLD STUFF
 
-        gridBoxesHidden = !gridBoxesHidden;
-    }
+    // void DrawDebugSphere(Vector3 position, float radius, Color color)
+    // {
+    //     GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //     sphere.transform.position = position;
+    //     sphere.transform.localScale = Vector3.one * radius * 2;
+    //     sphere.GetComponent<Renderer>().material.color = color;
+    // }
+
+    // void OnDrawGizmos()
+    // {
+    //     foreach (Node node in grid)
+    //     {
+    //         // Set Gizmo color
+    //         Gizmos.color = Physics.CheckSphere(node.worldPosition, nodeRadius * 0.8f, unwalkableMask) ? Color.red : Color.green;
+
+    //         // Draw wireframe sphere
+    //         Gizmos.DrawWireSphere(node.worldPosition, nodeRadius * 0.8f);
+    //     }
+    // }
 
     // void OldSetPlaneVariables(GameObject plane)
     // {
