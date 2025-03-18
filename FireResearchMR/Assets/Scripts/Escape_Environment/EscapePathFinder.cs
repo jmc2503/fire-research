@@ -78,6 +78,8 @@ public class EscapePathFinder : MonoBehaviour
             currentNode = currentNode.parent;
         }
 
+        path.Add(startNode);
+
         path.Reverse();
         return path;
 

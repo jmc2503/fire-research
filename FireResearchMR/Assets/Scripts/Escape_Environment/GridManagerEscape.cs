@@ -206,7 +206,10 @@ public class GridManagerEscape : MonoBehaviour
 
         foreach (Node exit in exitList)
         {
-            exit.Exit = true;
+            if (exit.walkable)
+            {
+                exit.Exit = true;
+            }
         }
     }
 
@@ -259,7 +262,10 @@ public class GridManagerEscape : MonoBehaviour
     {
         foreach (Node node in grid)
         {
-            node.nodeObject.GetComponent<Renderer>().enabled = !node.nodeObject.GetComponent<Renderer>().enabled;
+            if (!node.Exit)
+            {
+                node.nodeObject.GetComponent<Renderer>().enabled = !node.nodeObject.GetComponent<Renderer>().enabled;
+            }
         }
     }
 

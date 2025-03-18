@@ -4,7 +4,7 @@ from matplotlib.patches import Rectangle, FancyArrowPatch
 import numpy as np
 
 class Grid:
-    def __init__(self, m, n, spread_prob=1):
+    def __init__(self, m, n, spread_prob=1, num_start_fires=1,visualize=False):
         
         #mxn grid
         self.size_x = m
@@ -12,12 +12,14 @@ class Grid:
        
         #Probabilty of fire spreading
         self.fire_spread_probability = spread_prob
+        self.num_start_fires = num_start_fires
         
         #List of exit locations
         self.exit_list = []
 
         self.reset()
-        self.initialize_plot()
+        if(visualize):
+            self.initialize_plot()
 
     def initialize_plot(self):
         #initialize plot/grid
@@ -50,8 +52,9 @@ class Grid:
     def reset(self):
         #Start Fire
         self.fire_grid = [[0 for _ in range(self.size_y)] for x in range(self.size_x)]
-        x, y = random.randint(0, self.size_x-1), random.randint(0, self.size_y-1)
-        self.fire_grid[x][y] = 1
+        for i in range(self.num_start_fires):
+            x, y = random.randint(0, self.size_x-1), random.randint(0, self.size_y-1)
+            self.fire_grid[x][y] = 1
         
         #Reset Agent Pos
         self.agent_pos = (random.randint(0, self.size_x-1), random.randint(0, self.size_y-1))
@@ -116,13 +119,13 @@ class Grid:
         if new_x >= 0 and new_x < self.size_x and new_y >= 0 and new_y < self.size_y:
             self.agent_pos = (new_x, new_y)
             
-        done = False
+        done = 0
 
         #Check terminal conditions
         if self.fire_grid[self.agent_pos[0]][self.agent_pos[1]] == 1:
-            done = True
+            done = 2 #fail
         if self.agent_pos in self.exit_list:
-            done = True
+            done = 1 #success
         
         self.spread_fire()
             
@@ -145,7 +148,7 @@ class Grid:
             self.ax.add_patch(exit_patch)
         
         if path is not None:
-            for i in range(len(path) - 1):
+            for i in range(1,len(path) - 1):
                 start = path[i]
                 end = path[i + 1]
                 arrow = FancyArrowPatch((start[1], start[0]), (end[1], end[0]), mutation_scale=15, arrowstyle='->', color='blue')
