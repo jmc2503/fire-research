@@ -20,6 +20,7 @@ public class Node
     private bool hasPlayer;
     private bool hidden;
     private Material[] materials;
+    private Transform fireTransform;
 
     public Node(int _x, int _y, Vector3 _worldPosition, GameObject _nodeObject, Material[] _materials, bool walkable)
     {
@@ -32,6 +33,7 @@ public class Node
         this.hidden = false;
         this.exit = false;
         this.materials = _materials;
+        this.fireTransform = nodeObject.transform.Find("MediumFlames");
 
         this.walkable = walkable;
 
@@ -56,7 +58,7 @@ public class Node
         set
         {
             hidden = value;
-            SetFireMaterial(this.onFire);
+            SetMaterial();
         }
     }
 
@@ -66,7 +68,7 @@ public class Node
         set
         {
             onFire = value;
-            SetFireMaterial(value);
+            SetMaterial();
         }
     }
 
@@ -76,7 +78,7 @@ public class Node
         set
         {
             hasPlayer = value;
-            SetPlayerMaterial(value);
+            SetMaterial();
         }
     }
 
@@ -86,76 +88,38 @@ public class Node
         set
         {
             exit = value;
-            SetExitMaterial(value);
+            SetMaterial();
         }
     }
 
-    private void SetFireMaterial(bool value)
+    private void SetMaterial()
     {
-        Transform fireTranform = nodeObject.transform.Find("MediumFlames");
-
-        if (value && !this.hidden)
+        if (this.onFire && !this.hidden) //Fire takes priority in rendering
         {
             this.nodeObject.GetComponent<MeshRenderer>().material = materials[1];
-            if (fireTranform != null)
-            {
-                fireTranform.gameObject.SetActive(true);
-            }
+            fireTransform.gameObject.SetActive(true);
         }
         else
         {
-            this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
-            if (fireTranform != null)
+            fireTransform.gameObject.SetActive(false);
+            if (this.hasPlayer) //Has Player
             {
-                fireTranform.gameObject.SetActive(false);
+                this.nodeObject.GetComponent<MeshRenderer>().material = materials[2];
             }
-        }
-    }
-
-    private void SetExitMaterial(bool value)
-    {
-        if (value)
-        {
-            this.nodeObject.GetComponent<MeshRenderer>().material = materials[3];
-        }
-        else
-        {
-            this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
-        }
-    }
-
-    private void SetPlayerMaterial(bool value)
-    {
-
-        Transform fireTranform = nodeObject.transform.Find("MediumFlames");
-
-        if (value)
-        {
-            this.nodeObject.GetComponent<MeshRenderer>().material = materials[2];
-            if (fireTranform != null)
+            else if (!this.walkable) //Unwalkable
             {
-                fireTranform.gameObject.SetActive(false);
+                this.nodeObject.GetComponent<MeshRenderer>().material = materials[4];
             }
-        }
-        else
-        {
-            if (this.onFire)
+            else if (this.exit) //Exit
             {
-                this.nodeObject.GetComponent<MeshRenderer>().material = materials[1];
-                if (fireTranform != null)
-                {
-                    fireTranform.gameObject.SetActive(true);
-                }
+                this.nodeObject.GetComponent<MeshRenderer>().material = materials[3];
             }
-            else
+            else //Normal
             {
                 this.nodeObject.GetComponent<MeshRenderer>().material = materials[0];
-                if (fireTranform != null)
-                {
-                    fireTranform.gameObject.SetActive(false);
-                }
             }
         }
+
     }
 
     public static (int, int) operator -(Node self, Node other)

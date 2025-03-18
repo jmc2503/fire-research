@@ -29,13 +29,15 @@ public class GridManagerEscape : MonoBehaviour
     public Toggle gridBoxesToggle;
     public Toggle effectMeshToggle;
     public EffectMesh effectMesh;
+    public GameObject resetText;
+
 
     public PlayerControllerEscape playerControllerEscape;
 
     private EscapePathFinder pathFinder;
 
     private Node[,] grid; // The grid of nodes
-    private Node[] exitList = new Node[4]; // List of exits on each side of the grid
+    private List<Node> exitList = new List<Node>(); // List of exits on each side of the grid
     private List<Node> fireList;
     private float nodeRadius; // The radius of each node
 
@@ -150,9 +152,17 @@ public class GridManagerEscape : MonoBehaviour
             exit.Exit = false;
         }
 
+        exitList.Clear();
         fireList.Clear();
         CreateExits();
         CreateFire();
+    }
+
+    IEnumerator ResetDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Reset();
+        resetText.SetActive(false);
     }
 
     void Update()
@@ -193,23 +203,53 @@ public class GridManagerEscape : MonoBehaviour
                 pathFinder.DrawPath(shortestPath);
             }
 
+            if (currNode.Exit)
+            {
+                currNode.Exit = false;
+                resetText.SetActive(true);
+                StartCoroutine(ResetDelay(3));
+            }
+
             lastNode = currNode;
         }
     }
 
     void CreateExits()
     {
-        exitList[0] = grid[0, UnityEngine.Random.Range(0, GridColumns)];
-        exitList[1] = grid[GridRows - 1, UnityEngine.Random.Range(0, GridColumns)];
-        exitList[2] = grid[UnityEngine.Random.Range(0, GridRows), 0];
-        exitList[3] = grid[UnityEngine.Random.Range(0, GridRows), GridColumns - 1];
+
+        List<Node> topRow = new List<Node>();
+        List<Node> bottomRow = new List<Node>();
+        List<Node> leftColumn = new List<Node>();
+        List<Node> rightColumn = new List<Node>();
+
+        for (int y = 0; y < GridColumns; y++)
+        {
+            if (grid[0, y].walkable)
+            {
+                topRow.Add(grid[0, y]);
+            }
+            if (grid[GridRows - 1, y].walkable)
+            {
+                bottomRow.Add(grid[GridRows - 1, y]);
+            }
+            if (grid[y, 0].walkable)
+            {
+                leftColumn.Add(grid[y, 0]);
+            }
+            if (grid[y, GridColumns - 1].walkable)
+            {
+                rightColumn.Add(grid[y, GridColumns - 1]);
+            }
+        }
+
+        exitList.Add(topRow[UnityEngine.Random.Range(0, topRow.Count)]);
+        exitList.Add(bottomRow[UnityEngine.Random.Range(0, bottomRow.Count)]);
+        exitList.Add(leftColumn[UnityEngine.Random.Range(0, leftColumn.Count)]);
+        exitList.Add(rightColumn[UnityEngine.Random.Range(0, rightColumn.Count)]);
 
         foreach (Node exit in exitList)
         {
-            if (exit.walkable)
-            {
-                exit.Exit = true;
-            }
+            exit.Exit = true;
         }
     }
 
