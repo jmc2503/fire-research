@@ -1,13 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 using Meta.XR.MRUtilityKit;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Video;
 using UnityEngine.UI;
-using Oculus.Platform;
+using System.Diagnostics;
+using System.IO;
 
 public class GridManagerEscape : MonoBehaviour
 {
@@ -54,6 +53,9 @@ public class GridManagerEscape : MonoBehaviour
     private Vector3 horizontalDirection;
     private Vector3 verticalDirection;
 
+    private List<long> PathFindTimes = new List<long>();
+    private string filePath;
+
     private void OnEnable()
     {
         FloorSpawnAR.OnFloorSpawned += SetFloor;
@@ -67,6 +69,7 @@ public class GridManagerEscape : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        filePath = Path.Combine(Application.persistentDataPath, "PathFindTimes.txt");
         pathFinder = GetComponent<EscapePathFinder>();
 
 
@@ -169,6 +172,8 @@ public class GridManagerEscape : MonoBehaviour
     {
         if (user != null && start)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             Node currNode = GetNodeFromWorldPoint(user.transform.position);
             if (currNode != lastNode)
             {
@@ -201,6 +206,8 @@ public class GridManagerEscape : MonoBehaviour
                 }
 
                 pathFinder.DrawPath(shortestPath);
+                sw.Stop();
+                PathFindTimes.Add(sw.ElapsedMilliseconds);
             }
 
             if (currNode.Exit)
@@ -212,6 +219,16 @@ public class GridManagerEscape : MonoBehaviour
 
             lastNode = currNode;
         }
+
+        if (Input.GetKeyDown(KeyCode.Space) || OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger))
+        {
+            SaveToFile();
+        }
+        else if (Input.GetKeyDown(KeyCode.H))
+        {
+            ToggleGridBoxesHidden(true);
+        }
+
     }
 
     void CreateExits()
@@ -272,12 +289,26 @@ public class GridManagerEscape : MonoBehaviour
                 bool walkable = true;
                 Collider[] colliders = Physics.OverlapSphere(worldPos, nodeRadius * 0.8f, unwalkableMask);
 
+                float fireHeight = 0f;
+                GameObject furniture = null;
+
+                foreach (Collider collider in colliders)
+                {
+                    furniture = collider.gameObject;
+                }
+
+                if (furniture != null)
+                {
+                    fireHeight = furniture.GetComponent<Renderer>().bounds.extents.y * 2;
+                }
+
+
                 if (colliders.Length > 0)
                 {
                     walkable = false;
                 }
 
-                grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, rotation), materials, walkable);
+                grid[i, j] = new Node(i, j, worldPos, Instantiate(gridBox, worldPos, rotation), materials, walkable, fireHeight);
 
             }
         }
@@ -302,10 +333,7 @@ public class GridManagerEscape : MonoBehaviour
     {
         foreach (Node node in grid)
         {
-            if (!node.Exit)
-            {
-                node.nodeObject.GetComponent<Renderer>().enabled = !node.nodeObject.GetComponent<Renderer>().enabled;
-            }
+            node.Hidden = !node.Hidden;
         }
     }
 
@@ -330,7 +358,7 @@ public class GridManagerEscape : MonoBehaviour
             if (UnityEngine.Random.value <= FireSpreadProbability)
             {
 
-                List<Node> availableSpots = GetNeighbors(node);
+                List<Node> availableSpots = GetNeighbors(node, true);
 
                 if (availableSpots.Count > 0)
                 {
@@ -344,7 +372,7 @@ public class GridManagerEscape : MonoBehaviour
         fireList.AddRange(newFires);
     }
 
-    public List<Node> GetNeighbors(Node node)
+    public List<Node> GetNeighbors(Node node, bool fireSpread = false)
     {
         int x = node.x;
         int y = node.y;
@@ -353,30 +381,73 @@ public class GridManagerEscape : MonoBehaviour
 
         if (x - 1 >= 0)
         {
-            if (grid[x - 1, y].walkable && grid[x - 1, y].OnFire == false)
+            if (fireSpread)
             {
-                neighbors.Add(grid[x - 1, y]);
+                if (grid[x - 1, y].OnFire == false)
+                {
+                    neighbors.Add(grid[x - 1, y]);
+                }
             }
+            else
+            {
+                if (grid[x - 1, y].walkable && grid[x - 1, y].OnFire == false)
+                {
+                    neighbors.Add(grid[x - 1, y]);
+                }
+            }
+
         }
         if (x + 1 < GridRows)
         {
-            if (grid[x + 1, y].walkable && grid[x + 1, y].OnFire == false)
+            if (fireSpread)
             {
-                neighbors.Add(grid[x + 1, y]);
+                if (grid[x + 1, y].OnFire == false)
+                {
+                    neighbors.Add(grid[x + 1, y]);
+                }
+            }
+            else
+            {
+                if (grid[x + 1, y].walkable && grid[x + 1, y].OnFire == false)
+                {
+                    neighbors.Add(grid[x + 1, y]);
+                }
             }
         }
         if (y - 1 >= 0)
         {
-            if (grid[x, y - 1].walkable && grid[x, y - 1].OnFire == false)
+
+            if (fireSpread)
             {
-                neighbors.Add(grid[x, y - 1]);
+                if (grid[x, y - 1].OnFire == false)
+                {
+                    neighbors.Add(grid[x, y - 1]);
+                }
             }
+            else
+            {
+                if (grid[x, y - 1].walkable && grid[x, y - 1].OnFire == false)
+                {
+                    neighbors.Add(grid[x, y - 1]);
+                }
+            }
+
         }
         if (y + 1 < GridColumns)
         {
-            if (grid[x, y + 1].walkable && grid[x, y + 1].OnFire == false)
+            if (fireSpread)
             {
-                neighbors.Add(grid[x, y + 1]);
+                if (grid[x, y + 1].OnFire == false)
+                {
+                    neighbors.Add(grid[x, y + 1]);
+                }
+            }
+            else
+            {
+                if (grid[x, y + 1].walkable && grid[x, y + 1].OnFire == false)
+                {
+                    neighbors.Add(grid[x, y + 1]);
+                }
             }
         }
 
@@ -448,6 +519,18 @@ public class GridManagerEscape : MonoBehaviour
             GridColumns = (int)Math.Floor((corners[2] - corners[0]).magnitude / heightJump);
 
         }
+    }
+
+    void SaveToFile()
+    {
+        using (StreamWriter writer = new StreamWriter(filePath, false))
+        {
+            foreach (long time in PathFindTimes)
+            {
+                writer.WriteLine(time);
+            }
+        }
+        UnityEngine.Debug.Log("Frame rate log saved to: " + filePath);
     }
 
     //DEBUGGING / OLD STUFF

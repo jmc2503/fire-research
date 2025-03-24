@@ -13,6 +13,7 @@ public class Node
     public int hCost;
     public Node parent;
     public bool walkable;
+    public float fireHeight;
 
 
     private bool exit;
@@ -22,7 +23,7 @@ public class Node
     private Material[] materials;
     private Transform fireTransform;
 
-    public Node(int _x, int _y, Vector3 _worldPosition, GameObject _nodeObject, Material[] _materials, bool walkable)
+    public Node(int _x, int _y, Vector3 _worldPosition, GameObject _nodeObject, Material[] _materials, bool _walkable, float _fireHeight)
     {
         this.x = _x;
         this.y = _y;
@@ -34,8 +35,11 @@ public class Node
         this.exit = false;
         this.materials = _materials;
         this.fireTransform = nodeObject.transform.Find("MediumFlames");
+        this.fireHeight = _fireHeight;
 
-        this.walkable = walkable;
+        this.walkable = _walkable;
+
+        fireTransform.position = new Vector3(fireTransform.position.x, fireTransform.position.y + fireHeight, fireTransform.position.z);
 
         if (!walkable)
         {
@@ -94,7 +98,24 @@ public class Node
 
     private void SetMaterial()
     {
-        if (this.onFire && !this.hidden) //Fire takes priority in rendering
+
+        if (this.hidden)
+        {
+            if (!this.exit)
+            {
+                nodeObject.GetComponent<Renderer>().enabled = false;
+            }
+            else
+            {
+                nodeObject.GetComponent<Renderer>().enabled = true;
+            }
+        }
+        else
+        {
+            nodeObject.GetComponent<Renderer>().enabled = true;
+        }
+
+        if (this.onFire) //Fire takes priority in rendering
         {
             this.nodeObject.GetComponent<MeshRenderer>().material = materials[1];
             fireTransform.gameObject.SetActive(true);
