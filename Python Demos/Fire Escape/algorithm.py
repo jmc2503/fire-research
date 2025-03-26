@@ -1,4 +1,11 @@
 import heapq
+import random
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 class ShortestPathAgent:
     def __init__(self, env):
@@ -83,8 +90,76 @@ class ShortestPathAgent:
             next_step = self.min_path[1]
             return self.get_action_from_position(start, next_step)
 
+class QLearningAgent:
+    def __init__(self, env, learning_rate=0.1, discount_factor=0.95, epsilon=0.9, epsilon_decay=0.9998, visualize=False):
+        self.env = env
 
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.epsilon = epsilon
+        self.epsilon_decay = epsilon_decay
+
+        self.q_table = {}
+
+        self.episode_reward_list = []
+
+        self.visualize = visualize
     
+    def get_q_value(self, state, action):
+        return self.q_table.get((state, action), 0.0) #If entry not found, return default 0.0 value
 
+    #Choose action with epsilon-greedy policy 
+    def choose_action(self, state, training=False):
+        #Only choose random actions if training
+        if training:
+            if random.random() < self.epsilon:
+                return random.randint(0, 3)
+            else:
+                return np.argmax([self.get_q_value(state, action) for action in range(4)])
+        else:
+            return np.argmax([self.get_q_value(state, action) for action in range(4)])
+    
+        #Update the current state, action q-value with the Q-Learning equation based on reward and future Q
+    def update_q_value(self, state, action, reward, next_state):
+        max_future_q = max([self.get_q_value(next_state, action) for action in range(4)])
+        current_q = self.get_q_value(state, action)
+
+        new_q = current_q + self.learning_rate * (reward + self.discount_factor * max_future_q - current_q)
+        self.q_table[(state, action)] = new_q
+    
+        #Iterate through the environment episodes number of times  
+    def train(self, episodes, max_steps=500):
+        for episode in range(episodes):
+            state = self.env.reset()
+            episode_reward = 0
+            step_count = 0
+            for step in range(max_steps): #max_steps stops infinite looping
+                #Get action and step through the environment
+                action = self.choose_action(state,training=True)
+                next_state, reward, done = self.env.step(action)
+                self.update_q_value(state, action, reward, next_state)
+                
+                # if self.visualize and episode != 0 and episode % 200 == 0:
+                #     self.env.display_grid(episode)
+                
+                state = next_state
+
+                episode_reward += reward
+                step_count += 1
+                
+                #Has the fire been found?
+                if done != 0:
+                    break
+                
+            self.epsilon *= self.epsilon_decay
+            self.episode_reward_list.append(episode_reward)
+    
+    def display_metrics(self):
+        plt.figure()
+        plt.plot(self.episode_reward_list)
+
+
+class PPOAgent:
+    pass
 
         

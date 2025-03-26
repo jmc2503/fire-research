@@ -1,14 +1,34 @@
 #Main
 from environment import Grid
-from algorithm import ShortestPathAgent
+from algorithm import ShortestPathAgent, QLearningAgent
 import matplotlib.pyplot as plt
 
 max_steps = 500
 verification_runs = 1000
 
 def main():
-    display_test()
+    qlearning_test()
 
+def qlearning_test():
+    env = Grid(7, 7, 0.25, 1,visualize=True)
+    agent = QLearningAgent(env)
+
+    agent.train(5000)
+
+    state = env.reset()
+
+    for i in range(max_steps):
+        action = agent.choose_action(state)
+        state, _, done = env.step(action)
+        if done != 0:
+            if done == 1:
+                print("Success!")
+            else:
+                print("fire")
+            break
+
+        env.display_grid()
+        plt.pause(1)
 
 def display_test():
     env = Grid(10, 10, 0, 0,visualize=True)

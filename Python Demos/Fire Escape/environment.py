@@ -3,6 +3,12 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, FancyArrowPatch
 import numpy as np
 
+REWARDS ={
+    "escape": 100,
+    "move_penalty": -1,
+    "fire_penalty": -100
+}
+
 class Grid:
     def __init__(self, m, n, spread_prob=1, num_start_fires=1,visualize=False):
         
@@ -62,6 +68,11 @@ class Grid:
         #Generate Exits
         self.exit_list = self.generate_exits()
 
+        for ex, ey in self.exit_list:
+            self.fire_grid[ex][ey] = 2
+
+        return (self.agent_pos, tuple(tuple(row) for row in self.fire_grid))
+
     def generate_exits(self):
         exits = []
 
@@ -119,6 +130,7 @@ class Grid:
         if new_x >= 0 and new_x < self.size_x and new_y >= 0 and new_y < self.size_y:
             self.agent_pos = (new_x, new_y)
             
+        reward = self.get_reward(self.agent_pos)
         done = 0
 
         #Check terminal conditions
@@ -128,8 +140,18 @@ class Grid:
             done = 1 #success
         
         self.spread_fire()
+
+        next_state = (self.agent_pos, tuple(tuple(row) for row in self.fire_grid))
             
-        return self.agent_pos, 0, done
+        return next_state, reward, done
+
+    def get_reward(self, new_agent_pos):
+        if new_agent_pos in self.exit_list:
+            return REWARDS['escape']
+        elif self.fire_grid[new_agent_pos[0]][new_agent_pos[1]] == 1:
+            return REWARDS['fire_penalty']
+        else:
+            return REWARDS['move_penalty']
 
     def display_grid(self, path=None):
         row, col = self.agent_pos

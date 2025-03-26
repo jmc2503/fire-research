@@ -53,7 +53,7 @@ public class GridManagerEscape : MonoBehaviour
     private Vector3 horizontalDirection;
     private Vector3 verticalDirection;
 
-    private List<long> PathFindTimes = new List<long>();
+    private List<double> PathFindTimes = new List<double>();
     private string filePath;
 
     private void OnEnable()
@@ -207,7 +207,7 @@ public class GridManagerEscape : MonoBehaviour
 
                 pathFinder.DrawPath(shortestPath);
                 sw.Stop();
-                PathFindTimes.Add(sw.ElapsedMilliseconds);
+                PathFindTimes.Add(sw.ElapsedTicks / (Stopwatch.Frequency / 1000000));
             }
 
             if (currNode.Exit)
