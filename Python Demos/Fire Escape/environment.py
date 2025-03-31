@@ -4,8 +4,10 @@ from matplotlib.patches import Rectangle, FancyArrowPatch
 import numpy as np
 
 REWARDS ={
-    "escape": 100,
+    "escape": 1000,
     "move_penalty": -1,
+    "distance_reward": 0,
+    "do_nothing": -10,
     "fire_penalty": -100
 }
 
@@ -125,12 +127,13 @@ class Grid:
         elif action == 3:
             dy = 1
             
+        old_agent_pos = self.agent_pos 
         #Move the agent
         new_x, new_y = self.agent_pos[0] + dx, self.agent_pos[1] + dy
         if new_x >= 0 and new_x < self.size_x and new_y >= 0 and new_y < self.size_y:
             self.agent_pos = (new_x, new_y)
             
-        reward = self.get_reward(self.agent_pos)
+        reward = self.get_reward(self.agent_pos, old_agent_pos)
         done = 0
 
         #Check terminal conditions
@@ -145,13 +148,28 @@ class Grid:
             
         return next_state, reward, done
 
-    def get_reward(self, new_agent_pos):
+    def get_reward(self, new_agent_pos, old_agent_pos):
         if new_agent_pos in self.exit_list:
             return REWARDS['escape']
         elif self.fire_grid[new_agent_pos[0]][new_agent_pos[1]] == 1:
             return REWARDS['fire_penalty']
-        else:
-            return REWARDS['move_penalty']
+        elif new_agent_pos == old_agent_pos:
+            return REWARDS['do_nothing']
+        
+        shortest_distance = float('inf')
+        closest_exit = self.exit_list[0]
+        for exit in self.exit_list:
+            if self.get_distance(old_agent_pos, exit) < shortest_distance:
+                closest_exit = exit
+                shortest_distance = self.get_distance(old_agent_pos, exit)
+        
+        if self.get_distance(new_agent_pos, closest_exit) < shortest_distance:
+            return REWARDS['distance_reward']
+
+        return REWARDS['move_penalty']
+        
+    def get_distance(self, start, end):
+        return abs(start[0] - end[0]) + abs(start[1] - end[1])
 
     def display_grid(self, path=None):
         row, col = self.agent_pos

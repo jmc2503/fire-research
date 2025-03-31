@@ -72,7 +72,7 @@ class ShortestPathAgent:
         elif end[1] == start[1] + 1: #up
             return 3
     
-    def choose_action(self):
+    def choose_action(self, state):
         start = self.env.agent_pos
         
         self.min_path = []
@@ -91,7 +91,7 @@ class ShortestPathAgent:
             return self.get_action_from_position(start, next_step)
 
 class QLearningAgent:
-    def __init__(self, env, learning_rate=0.1, discount_factor=0.95, epsilon=0.9, epsilon_decay=0.9998, visualize=False):
+    def __init__(self, env, learning_rate=0.2, discount_factor=0.95, epsilon=0.9998, epsilon_decay=0.9998, visualize=False):
         self.env = env
 
         self.learning_rate = learning_rate
