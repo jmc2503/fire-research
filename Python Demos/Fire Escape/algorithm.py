@@ -91,7 +91,7 @@ class ShortestPathAgent:
             return self.get_action_from_position(start, next_step)
 
 class QLearningAgent:
-    def __init__(self, env, learning_rate=0.2, discount_factor=0.95, epsilon=0.9998, epsilon_decay=0.9998, visualize=False):
+    def __init__(self, env, learning_rate=0.5, discount_factor=0.95, epsilon=0.9998, epsilon_decay=0.9998, visualize=False):
         self.env = env
 
         self.learning_rate = learning_rate
@@ -115,9 +115,14 @@ class QLearningAgent:
             if random.random() < self.epsilon:
                 return random.randint(0, 3)
             else:
-                return np.argmax([self.get_q_value(state, action) for action in range(4)])
+                return self.get_best_action(state)
         else:
-            return np.argmax([self.get_q_value(state, action) for action in range(4)])
+            return self.get_best_action(state)
+    
+    def get_best_action(self, state):
+        q_values = [self.get_q_value(state, action) for action in range(4)]
+        best_actions = [a for a, q in enumerate(q_values) if q == max(q_values)]
+        return random.choice(best_actions)
     
         #Update the current state, action q-value with the Q-Learning equation based on reward and future Q
     def update_q_value(self, state, action, reward, next_state):
@@ -128,15 +133,27 @@ class QLearningAgent:
         self.q_table[(state, action)] = new_q
     
         #Iterate through the environment episodes number of times  
-    def train(self, episodes, max_steps=500):
+    def train(self, episodes, max_steps=200):
+
+        step_size = episodes / 10
+
         for episode in range(episodes):
             state = self.env.reset()
             episode_reward = 0
             step_count = 0
+
+            #Print progress
+            if episode % step_size == 0:
+                print('.', end=" ")
+
             for step in range(max_steps): #max_steps stops infinite looping
                 #Get action and step through the environment
                 action = self.choose_action(state,training=True)
                 next_state, reward, done = self.env.step(action)
+                
+                if step == max_steps - 1:
+                    reward = -1000
+                
                 self.update_q_value(state, action, reward, next_state)
                 
                 # if self.visualize and episode != 0 and episode % 200 == 0:
@@ -151,7 +168,7 @@ class QLearningAgent:
                 if done != 0:
                     break
                 
-            self.epsilon *= self.epsilon_decay
+            self.epsilon = max(0.1, self.epsilon*self.epsilon_decay)
             self.episode_reward_list.append(episode_reward)
     
     def display_metrics(self):

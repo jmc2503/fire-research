@@ -3,14 +3,15 @@ from environment import Grid
 from algorithm import ShortestPathAgent, QLearningAgent
 import matplotlib.pyplot as plt
 
-max_steps = 500
+max_steps = 200
 verification_runs = 1000
 
 def main():
-    qlearning_test()
+    agent = qlearning_test()
+    #success_test(agent)
 
 def qlearning_test():
-    env = Grid(20, 20, 0.25, 1,visualize=False)
+    env = Grid(10, 10, 0.25, 1,visualize=False)
     agent = QLearningAgent(env)
 
     agent.train(100000)
@@ -36,6 +37,8 @@ def qlearning_test():
     
     print("Success Rate: " + str(successes / verification_runs))
 
+    return agent
+
 def display_test():
     env = Grid(10, 10, 0, 0,visualize=True)
     agent = ShortestPathAgent(env)
@@ -51,7 +54,7 @@ def display_test():
 
     env.reset()
 
-def success_test():
+def success_test(agent):
     total_success_list = []
     success_list = []
 
@@ -60,7 +63,7 @@ def success_test():
         for prob in range(0,11):
             print("Testing (prob, fires): (" + str(prob/10) + "," + str(num_start_fires) + ")")        
             env = Grid(20, 20, prob/10,num_start_fires)
-            agent = ShortestPathAgent(env)
+            agent.env = env
 
             state = env.reset()
 

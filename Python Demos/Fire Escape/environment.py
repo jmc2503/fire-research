@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, FancyArrowPatch
 import numpy as np
 
-REWARDS ={
-    "escape": 1000,
-    "move_penalty": -1,
-    "distance_reward": 0,
-    "do_nothing": -10,
-    "fire_penalty": -100
+REWARDS = {
+    "escape": 1000,   # Reaching exit
+    "fire_penalty": -1000,  # Stepping on fire
+    "move_penalty": -0.1,   # Slight penalty for movement
+    "distance_reward": 4,   # More reward for moving towards exit
+    "do_nothing": -5   # Less punishing for waiting
 }
 
 class Grid:
@@ -73,7 +73,7 @@ class Grid:
         for ex, ey in self.exit_list:
             self.fire_grid[ex][ey] = 2
 
-        return (self.agent_pos, tuple(tuple(row) for row in self.fire_grid))
+        return self.get_next_state()
 
     def generate_exits(self):
         exits = []
@@ -143,10 +143,8 @@ class Grid:
             done = 1 #success
         
         self.spread_fire()
-
-        next_state = (self.agent_pos, tuple(tuple(row) for row in self.fire_grid))
-            
-        return next_state, reward, done
+        
+        return self.get_next_state(), reward, done
 
     def get_reward(self, new_agent_pos, old_agent_pos):
         if new_agent_pos in self.exit_list:
@@ -170,6 +168,32 @@ class Grid:
         
     def get_distance(self, start, end):
         return abs(start[0] - end[0]) + abs(start[1] - end[1])
+
+    def get_next_state(self):
+        distances = [self.get_distance(self.agent_pos, exit) for exit in self.exit_list]
+        min_distance = min(distances)
+
+        # Nearby fire count (Up, Down, Left, Right)
+        x, y = self.agent_pos
+        
+        fire_neighbors = np.zeros((3, 3), dtype=int)  # 3x3 grid initialized to 0
+
+        for dx in range(-1, 2):  # -1, 0, 1
+            for dy in range(-1, 2):  # -1, 0, 1
+                nx, ny = x + dx, y + dy  # Neighboring cell coordinates
+
+                # Check if within bounds
+                if 0 <= nx < self.size_x and 0 <= ny < self.size_y:
+                    fire_neighbors[dx + 1][dy + 1] = self.fire_grid[nx][ny]  # 1 if on fire, 0 if not
+            
+        # fire_neighbors = sum([
+        #     self.fire_grid[x-1][y] if x > 0 else 0,  
+        #     self.fire_grid[x+1][y] if x < self.size_x-1 else 0,  
+        #     self.fire_grid[x][y-1] if y > 0 else 0,  
+        #     self.fire_grid[x][y+1] if y < self.size_y-1 else 0  
+        # ])
+
+        return (self.agent_pos, min_distance, tuple(map(tuple, fire_neighbors)))
 
     def display_grid(self, path=None):
         row, col = self.agent_pos
